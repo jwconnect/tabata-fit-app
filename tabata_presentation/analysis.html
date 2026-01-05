@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* reset default body margin to remove extra 8px gap */
+        body { margin: 0; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px; /* DO NOT remove */
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .header {
+            padding-top: 60px; /* DO NOT change */
+            padding-left: 80px;
+            margin-bottom: 10px; /* reduced to save vertical space */
+        }
+        h2 {
+            font-size: 48px;
+            font-weight: 900;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            margin: 0;
+        }
+        .accent-line {
+            width: 100px;
+            height: 8px;
+            background-color: #FF3B30;
+            margin-top: 10px;
+        }
+        .main-content {
+            display: flex;
+            padding-left: 60px;
+            gap: 24px; /* reduced gap */
+            align-items: flex-start;
+        }
+        .analysis-table {
+            flex: 0 0 560px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px; /* reduced */
+        }
+        th {
+            text-align: left;
+            font-size: 20px;
+            color: #FF3B30;
+            padding-top: 6px; /* reduced */
+            border-bottom: 2px solid #333333;
+        }
+        td {
+            padding-top: 6px; /* reduced */
+            font-size: 18px;
+            line-height: 1.4;
+            vertical-align: top;
+        }
+        .app-name {
+            font-weight: 700;
+            color: #FFFFFF;
+            font-size: 22px;
+        }
+        .feature-list {
+            list-style: none;
+            margin-top: 10px; /* reduced */
+            padding-left: 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 6px; /* reduced */
+            font-size: 18px;
+        }
+        .feature-item i {
+            color: #FF3B30;
+            font-size: 20px;
+        }
+        .image-section {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .app-preview {
+            width: 320px;
+            height: 320px; /* reduced */
+            object-fit: contain;
+            filter: brightness(0.9);
+        }
+        .insight-box {
+            margin-top: 0;
+            background-color: #1A1A1A;
+            padding: 12px; /* reduced */
+            width: 280px;
+        }
+        .insight-title {
+            color: #FF3B30;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="header">
+            <h2>Market Analysis & Insights</h2>
+            <div class="accent-line"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="analysis-table">
+                <table>
+                    <tr>
+                        <th style="width: 40%;">기존 앱 서비스</th>
+                        <th>핵심 특징 및 분석 결과</th>
+                    </tr>
+                    <tr>
+                        <td class="app-name">타이머 플러스</td>
+                        <td>직관적인 UI와 큼직한 숫자 표시로 운동 중 가독성 극대화. 단순함이 가장 큰 무기.</td>
+                    </tr>
+                    <tr>
+                        <td class="app-name">Tabata Timer</td>
+                        <td>고도의 커스터마이징 제공. 다만, 복잡한 설정으로 인해 초보자 진입 장벽 존재.</td>
+                    </tr>
+                </table>
+
+                <ul class="feature-list">
+                    <li class="feature-item"><i class="fas fa-check-circle"></i> 자동 타이머 전환 및 음성 알림 필수</li>
+                    <li class="feature-item"><i class="fas fa-check-circle"></i> 운동 중 조작 최소화 (Hands-free UX)</li>
+                    <li class="feature-item"><i class="fas fa-check-circle"></i> 실시간 진행 상황 시각화의 중요성</li>
+                </ul>
+            </div>
+
+            <div class="image-section">
+                <img src="/home/ubuntu/upload/search_images/1MnefEpG0HGb.jpg" class="app-preview" alt="App Dashboard Analysis">
+                <div class="insight-box">
+                    <div class="insight-title">USER FEEDBACK INSIGHT</div>
+                    <p style="font-size: 16px; line-height: 1.5; margin:0;">"운동 중에는 화면을 볼 여유가 없습니다. 명확한 사운드 피드백과 한눈에 들어오는 색상 구분이 필수적입니다."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

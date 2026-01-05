@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body { margin: 0; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px; /* keep as required */
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            padding-top: 80px; /* must keep */
+            padding-left: 80px;
+            margin-bottom: 8px; /* reduced to save vertical space */
+        }
+        h2 {
+            font-size: 56px;
+            font-weight: 900;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            margin: 0;
+            line-height: 1.1;
+        }
+        .accent-line {
+            width: 120px;
+            height: 10px;
+            background-color: #FF3B30;
+            margin-top: 15px;
+        }
+        .content-grid {
+            display: flex;
+            padding-left: 60px; /* reduced */
+            gap: 48px; /* slightly reduced */
+            flex: 1;
+            align-items: flex-start;
+        }
+        .summary-section {
+            flex: 0 0 380px; /* slightly narrower to reduce wrapping */
+        }
+        .future-section {
+            flex: 1;
+            padding-right: 60px; /* reduced */
+        }
+        .section-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: #FF3B30;
+            margin-bottom: 10px; /* reduced */
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .item {
+            margin-top: 10px; /* reduced */
+            display: flex;
+            gap: 16px; /* slightly reduced */
+        }
+        .item i {
+            font-size: 24px;
+            color: #FF3B30;
+            padding-top: 2px; /* slightly reduced */
+        }
+        .item-text h4 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 6px; /* slightly reduced */
+        }
+        .item-text p {
+            font-size: 18px;
+            line-height: 1.4; /* slightly tighter */
+            color: #E0E0E0;
+            margin: 0;
+        }
+        .vision-footer {
+            background-color: #FF3B30;
+            color: #FFFFFF;
+            padding-top: 14px; /* reduced from 30 */
+            padding-left: 80px;
+            height: 64px; /* reduced to save vertical space */
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="header">
+            <h2>Conclusion &<br>Future Roadmap</h2>
+            <div class="accent-line"></div>
+        </div>
+
+        <div class="content-grid">
+            <div class="summary-section">
+                <div class="section-title">성과 요약</div>
+                <div class="item">
+                    <i class="fas fa-check-double"></i>
+                    <div class="item-text">
+                        <h4>과학적 원리 구현</h4>
+                        <p>20/10 공식 기반의 고성능 타이머 엔진 구현</p>
+                    </div>
+                </div>
+                <div class="item">
+                    <i class="fas fa-check-double"></i>
+                    <div class="item-text">
+                        <h4>사용자 중심 UX</h4>
+                        <p>운동 중 시각적 피드백과 직관적 인터페이스 제공</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="future-section">
+                <div class="section-title">향후 발전 방향</div>
+                <div class="item">
+                    <i class="fas fa-robot"></i>
+                    <div class="item-text">
+                        <h4>AI 코칭 시스템</h4>
+                        <p>실시간 자세 교정 및 개인 맞춤 강도 조절</p>
+                    </div>
+                </div>
+                <div class="item">
+                    <i class="fas fa-link"></i>
+                    <div class="item-text">
+                        <h4>에코시스템 확장</h4>
+                        <p>웨어러블 연동과 커뮤니티 챌린지 강화</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="vision-footer">
+            Your Ultimate Tabata Partner: TabataFit
+        </div>
+    </div>
+</body>
+</html>

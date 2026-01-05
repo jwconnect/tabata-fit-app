@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .slide-container {
+            width: 1280px;
+            min-height: 720px; /* keep as required */
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .header {
+            padding-top: 60px; /* do not change */
+            padding-left: 80px;
+            margin-bottom: 20px; /* reduced from 30 to save vertical space */
+        }
+        h2 {
+            font-size: 48px;
+            font-weight: 900;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            margin: 0;
+        }
+        .accent-line {
+            width: 100px;
+            height: 8px;
+            background-color: #FF3B30;
+            margin-top: 10px;
+        }
+        .main-content {
+            display: flex;
+            padding-left: 80px;
+            gap: 24px; /* slightly reduced */
+            align-items: flex-start;
+        }
+        .info-sections {
+            flex: 0 0 600px; /* tightened width to balance image */
+            display: grid;
+            grid-auto-rows: auto;
+            row-gap: 6px; /* tightened from 8 -> saves a bit */
+        }
+        .section-card {
+            display: flex;
+            gap: 12px; /* reduced from 16 */
+            padding: 4px 0; /* reduced top padding to save height */
+            align-items: flex-start;
+        }
+        .icon-wrapper {
+            flex: 0 0 52px;
+            height: 52px; /* slightly smaller to reduce vertical footprint */
+            background-color: #FF3B30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: #FFFFFF;
+        }
+        .section-content h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin: 0 0 6px 0;
+        }
+        .section-content p {
+            font-size: 18px;
+            line-height: 1.35;
+            margin: 0;
+        }
+        .image-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 6px; /* small lift to align with section content */
+        }
+        .app-mockup {
+            width: 320px; /* reduced width */
+            height: 360px; /* reduced from 440 to ensure overall height fits within slide */
+            object-fit: contain;
+        }
+        .tech-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .tag {
+            background-color: #333333;
+            color: #FFFFFF;
+            padding: 5px 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="header">
+            <h2>TabataFit: User-Centric Solution</h2>
+            <div class="accent-line"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="info-sections">
+                <div class="section-card">
+                    <div class="icon-wrapper"><i class="fas fa-bullseye"></i></div>
+                    <div class="section-content">
+                        <h3>개발 목표</h3>
+                        <p>간결한 UX에 체계적 운동 관리를 더한 하이브리드 솔루션으로 사용자가 운동에 집중하도록 지원.</p>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="icon-wrapper"><i class="fas fa-code"></i></div>
+                    <div class="section-content">
+                        <h3>기술 스택</h3>
+                        <p>Flutter와 Provider를 활용해 실시간 타이머 정확도와 앱 반응성을 확보.</p>
+                        <div class="tech-tags">
+                            <span class="tag">Flutter</span>
+                            <span class="tag">Dart</span>
+                            <span class="tag">Provider</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="icon-wrapper"><i class="fas fa-paint-brush"></i></div>
+                    <div class="section-content">
+                        <h3>UI/UX 전략</h3>
+                        <p>Material 3 기반으로 현대적이고 직관적인 인터페이스와 명확한 시각적 피드백 제공.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="image-section">
+                <img src="/home/ubuntu/upload/search_images/zN5Y8fvZd1tD.jpg" class="app-mockup" alt="TabataFit App Mockup">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

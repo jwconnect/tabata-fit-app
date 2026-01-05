@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+    <style>
+        /* remove default body gap so overall top aligns to 0 */
+        body { margin: 0; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px; /* keep as required */
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+        .left-content {
+            flex: 0 0 60%;
+            padding-top: 80px; /* keep upper padding of title */
+            padding-left: 60px; /* slightly reduced */
+            z-index: 2;
+        }
+        .right-image {
+            flex: 0 0 40%;
+            position: relative;
+            display:flex;
+            align-items:flex-start; /* don't stretch image to full height */
+        }
+        .right-image img {
+            width: 100%;
+            height: auto; /* avoid forcing full container height */
+            object-fit: cover;
+            filter: grayscale(30%) contrast(120%);
+        }
+        .accent-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 15px;
+            height: 100%;
+            background-color: #FF3B30;
+        }
+        h1 {
+            font-size: 64px;
+            font-weight: 900;
+            color: #FFFFFF;
+            line-height: 1.1;
+            margin-bottom: 16px; /* reduced */
+            text-transform: uppercase;
+        }
+        .subtitle {
+            font-size: 32px;
+            color: #FF3B30;
+            font-weight: 700;
+            margin-bottom: 24px; /* reduced */
+        }
+        .points-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px; /* reduced */
+            margin-top: 12px; /* reduced */
+        }
+        .point-card {
+            border-left: 4px solid #FF3B30;
+            padding-left: 10px; /* slightly reduced */
+            padding-top: 4px;
+        }
+        .point-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+        }
+        .point-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin:0;
+        }
+        .chart-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px; /* slightly reduced */
+            margin-top: 8px; /* reduced */
+        }
+        .chart-wrapper {
+            width: 200px;
+            height: 120px; /* reduced from 150 */
+            position: relative;
+        }
+        .chart-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .chart-label .num {
+            font-size: 48px;
+            font-weight: 900;
+            color: #FF3B30;
+        }
+        .chart-label .unit {
+            font-size: 16px;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="left-content">
+            <h1>Tabata Protocol:<br>The 4-Minute Miracle</h1>
+            <div class="subtitle">고강도 인터벌 트레이닝의 정수</div>
+            
+            <div class="points-container">
+                <div class="point-card">
+                    <div class="point-title">20/10 공식</div>
+                    <div class="point-text">20초 고강도 운동과 10초 휴식을 8세트 반복</div>
+                </div>
+                <div class="point-card">
+                    <div class="point-title">과학적 근거</div>
+                    <div class="point-text">VO2max 강도로 유산소·무산소 능력 동시 향상</div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-wrapper">
+                    <canvas id="tabataChart"></canvas>
+                    <div class="chart-label">
+                        <div class="num">4</div>
+                        <div class="unit">MINUTES</div>
+                    </div>
+                </div>
+                <div style="max-width: 300px;">
+                    <p class="point-text" style="color: #FFFFFF; font-weight: 700; margin:0 0 6px 0;">EPOC 효과:</p>
+                    <p class="point-text" style="margin:0;">운동 후에도 지속되는 칼로리 연소로 체지방 감소 극대화</p>
+                </div>
+            </div>
+        </div>
+        <div class="right-image">
+            <img src="/home/ubuntu/upload/search_images/DqWlJ0595J82.jpg" alt="Tabata Workout">
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('tabataChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['운동', '휴식'],
+                datasets: [{
+                    data: [20, 10],
+                    backgroundColor: ['#FF3B30', '#333333'],
+                    borderWidth: 0,
+                    cutout: '80%'
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    </script>
+</body>
+</html>

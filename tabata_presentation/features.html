@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body { margin: 0; background-color: #121212; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .header {
+            padding-top: 60px; /* keep upper padding of the title */
+            padding-left: 80px;
+            margin-bottom: 18px; /* reduced to tighten layout */
+        }
+        h2 {
+            font-size: 48px;
+            font-weight: 900;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            margin: 0;
+        }
+        .accent-line {
+            width: 100px;
+            height: 8px;
+            background-color: #FF3B30;
+            margin-top: 10px;
+        }
+        .main-content {
+            display: flex;
+            padding-left: 80px;
+            gap: 40px; /* slightly reduced */
+        }
+        .features-list {
+            flex: 0 0 560px; /* slightly narrower */
+            display: flex;
+            flex-direction: column;
+            gap: 18px; /* tightened spacing */
+        }
+        .feature-box {
+            padding-top: 12px; /* slightly reduced inner padding */
+            border-top: 1px solid #333333;
+        }
+        .feature-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #FF3B30;
+            margin-bottom: 8px;
+        }
+        .feature-desc {
+            font-size: 18px;
+            line-height: 1.6;
+            padding-left: 36px;
+        }
+        .image-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+        }
+        .dashboard-img {
+            width: 420px; /* reduced from 450 */
+            height: 420px; /* reduced height */
+            object-fit: contain;
+            filter: contrast(1.1);
+        }
+        .status-indicator {
+            display: flex;
+            gap: 18px;
+            margin-top: 20px; /* reduced */
+            padding-left: 36px;
+        }
+        .status-dot {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: #FF3B30;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="header">
+            <h2>Core Features & Interface</h2>
+            <div class="accent-line"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="features-list">
+                <div class="feature-box">
+                    <div class="feature-title">
+                        <i class="fas fa-stopwatch"></i>
+                        <span>스마트 타이머 & 시각화</span>
+                    </div>
+                    <div class="feature-desc">
+                        운동(Red), 휴식(Blue), 준비(Yellow) 상태를 직관적인 색상으로 구분하여 운동 중 가독성을 극대화합니다.
+                    </div>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-title">
+                        <i class="fas fa-chart-line"></i>
+                        <span>통계 대시보드</span>
+                    </div>
+                    <div class="feature-desc">
+                        전체 운동 시간, 소모 칼로리, 세트 완료 횟수 등 운동 성과를 실시간 차트로 시각화하여 제공합니다.
+                    </div>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-title">
+                        <i class="fas fa-user-cog"></i>
+                        <span>개인화 프로그램</span>
+                    </div>
+                    <div class="feature-desc">
+                        사용자의 체력 수준에 맞춰 운동 및 휴식 시간을 자유롭게 조정하고 나만의 루틴을 저장할 수 있습니다.
+                    </div>
+                </div>
+
+                <div class="status-indicator">
+                    <div class="status-dot"><div class="dot" style="background-color: #FF3B30;"></div> WORK</div>
+                    <div class="status-dot"><div class="dot" style="background-color: #007AFF;"></div> REST</div>
+                    <div class="status-dot"><div class="dot" style="background-color: #FFCC00;"></div> PREP</div>
+                </div>
+            </div>
+
+            <div class="image-section">
+                <img src="/home/ubuntu/upload/search_images/d2u5YfnwrPH8.jpg" class="dashboard-img" alt="TabataFit Dashboard UI">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

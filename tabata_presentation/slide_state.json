@@ -1,0 +1,52 @@
+{
+  "project_info": {
+    "title": "타바타 운동: 4분의 기적, 고강도 인터벌 트레이닝",
+    "created": 1767572889.1815555,
+    "last_updated": 1767573164.888117,
+    "total_slides": 5
+  },
+  "slides": {
+    "intro": "edited",
+    "analysis": "edited",
+    "tabatafit_overview": "edited",
+    "features": "edited",
+    "conclusion": "edited"
+  },
+  "outline": [
+    {
+      "id": "intro",
+      "title": "타바타 운동: 4분의 기적, 고강도 인터벌 트레이닝",
+      "summary": "타바타 운동의 정의, 핵심 공식 및 과학적 근거를 설명합니다.",
+      "image_plan": "/home/ubuntu/upload/search_images/DqWlJ0595J82.jpg - The slide introduces Tabata as a high-intensity interval training (HIIT) protocol. Image 7 clearly depicts a high-intensity workout setting with people performing exercises, which visually represents the concept of HIIT/Tabata.",
+      "slide_template_key": ""
+    },
+    {
+      "id": "analysis",
+      "title": "기존 타바타 앱 분석 및 사용자 경험 인사이트",
+      "summary": "기존 앱들의 장단점 분석과 사용자 피드백을 통한 필수 기능을 도출합니다.",
+      "image_plan": "/home/ubuntu/upload/search_images/1MnefEpG0HGb.jpg - This slide analyzes existing Tabata apps. Image 4 is a detailed fitness app dashboard with complex features and a focus on anatomy/tracking, representing the kind of sophisticated app being analyzed or the market opportunity for detailed statistics.",
+      "slide_template_key": ""
+    },
+    {
+      "id": "tabatafit_overview",
+      "title": "TabataFit: 사용자 중심의 혁신적 타바타 솔루션",
+      "summary": "개발된 앱의 목표, 기술 스택 및 디자인 전략을 소개합니다.",
+      "image_plan": "/home/ubuntu/upload/search_images/zN5Y8fvZd1tD.jpg - This slide introduces the new app, TabataFit, and its development using Flutter and a focus on UI/UX. Image 3 shows clean, modern, and simple mobile app screens with charts and graphs, which aligns with the goal of a user-centric, Material 3 design.",
+      "slide_template_key": ""
+    },
+    {
+      "id": "features",
+      "title": "TabataFit 핵심 기능 및 인터페이스 시각화",
+      "summary": "스마트 타이머, 상태별 시각화, 통계 대시보드 등 주요 기능을 설명합니다.",
+      "image_plan": "/home/ubuntu/upload/search_images/d2u5YfnwrPH8.jpg - This slide details the key features and user interface of the TabataFit app, including a statistics dashboard. Image 5 is a clear, modern dashboard UI with overview metrics and activity charts, perfectly illustrating the app's proposed dashboard feature.",
+      "slide_template_key": ""
+    },
+    {
+      "id": "conclusion",
+      "title": "결론 및 미래를 향한 발전 방향",
+      "summary": "프로젝트 성과 요약과 향후 AI 연동 및 커뮤니티 확장 계획을 제시합니다.",
+      "image_plan": "",
+      "slide_template_key": ""
+    }
+  ]
+}
