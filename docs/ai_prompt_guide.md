@@ -61,9 +61,11 @@ Swiss Sport Tech style, high contrast, minimalist, clean composition, profession
 | 파일명 | 카테고리 | Midjourney 프롬프트 |
 |--------|----------|---------------------|
 | `ic_category_fullbody.png` | 전신 운동 | `Minimalist icon of human figure in burpee position, geometric silhouette, vibrant red on black circle, Swiss Sport Tech fitness icon --ar 1:1 ` |
+| `ic_category_upper_body.png` | 상체 운동 | `Abstract icon of upper body doing pushup, geometric arms and chest silhouette, red gradient on dark background, Swiss Sport Tech style --ar 1:1 ` |
 | `ic_category_lowerbody.png` | 하체 운동 | `Abstract icon of legs in squat position, geometric line art, red gradient on dark background, Swiss Sport Tech style --ar 1:1 ` |
 | `ic_category_core.png` | 코어 운동 | `Stylized icon of torso in plank position, geometric abs representation, vibrant red, minimalist Swiss Sport Tech design --ar 1:1 ` |
 | `ic_category_cardio.png` | 유산소 | `Dynamic running figure icon with speed lines, geometric minimalist style, red on black, Swiss Sport Tech cardio icon --ar 1:1 ` |
+| `ic_category_hiit.png` | HIIT | `Explosive lightning bolt merged with jumping figure icon, high intensity energy, vibrant red pulse on black, Swiss Sport Tech maximum power icon --ar 1:1 ` |
 
 ---
 
@@ -176,8 +178,10 @@ Swiss Sport Tech style, high contrast, minimalist, clean composition, profession
 | `img_program_intermediate.png` | 중급자 타바타 | `Determined Korean idol athlete silhouette in dynamic pose, balanced composition, red and black with confident energy, Swiss Sport Tech intermediate level design, K-pop style --ar 16:9 ` |
 | `img_program_cardio.png` | 유산소 타바타 | `Abstract heart and lungs visualization with dynamic motion lines, red pulsing energy, black background, Swiss Sport Tech cardio concept art --ar 16:9 ` |
 | `img_program_core.png` | 코어 강화 타바타 | `Geometric representation of core muscles, abstract six-pack design with red accent lines, Swiss Sport Tech anatomical fitness art --ar 16:9 ` |
+| `img_program_upper_body.png` | 상체 강화 타바타 | `Strong upper body illustration, Korean idol athlete with defined arms and shoulders, geometric muscle fiber patterns in red on black, Swiss Sport Tech anatomical design, powerful stance --ar 16:9 ` |
 | `img_program_classic.png` | 클래식 타바타 | `Iconic stopwatch merged with flame, bold red and black, classic timeless design, Swiss Sport Tech premium fitness branding --ar 16:9 ` |
 | `img_program_extreme.png` | 익스트림 타바타 | `Explosive energy composition, Korean idol athlete breaking through geometric barriers, intense red lighting, black background, Swiss Sport Tech extreme fitness, K-pop dynamic --ar 16:9 ` |
+| `img_program_hiit.png` | HIIT 타바타 | `High intensity interval training visualization, Korean idol athlete in explosive jump motion, lightning bolt energy lines, intense red pulse effects on black, Swiss Sport Tech maximum performance design --ar 16:9 ` |
 
 ---
 

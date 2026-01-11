@@ -1,87 +1,171 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../utils/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('설정')),
       body: Consumer<SettingsProvider>(
         builder: (context, settingsProvider, child) {
-          return ListView(
-            children: [
-              const _SectionHeader(title: '알림'),
-              SwitchListTile(
-                title: const Text('소리'),
-                subtitle: const Text('운동 시작/종료 알림음'),
-                value: settingsProvider.soundEnabled,
-                onChanged: (value) => settingsProvider.setSoundEnabled(value),
-                secondary: const Icon(Icons.volume_up),
+          return CustomScrollView(
+            slivers: [
+              // 세련된 앱바
+              SliverAppBar(
+                expandedHeight: 140,
+                floating: false,
+                pinned: true,
+                backgroundColor: isDark ? AppColors.darkGray : Colors.white,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: Text(
+                    '설정',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 20,
+                    ),
+                  ),
+                  centerTitle: false,
+                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isDark
+                            ? [AppColors.darkGray, AppColors.deepBlack]
+                            : [Colors.white, AppColors.lightGray],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              SwitchListTile(
-                title: const Text('진동'),
-                subtitle: const Text('운동 시작/종료 진동'),
-                value: settingsProvider.vibrationEnabled,
-                onChanged: (value) =>
-                    settingsProvider.setVibrationEnabled(value),
-                secondary: const Icon(Icons.vibration),
-              ),
-              const Divider(),
 
-              const _SectionHeader(title: '화면'),
-              SwitchListTile(
-                title: const Text('다크 모드'),
-                subtitle: const Text('어두운 테마 사용'),
-                value: settingsProvider.darkMode,
-                onChanged: (value) => settingsProvider.setDarkMode(value),
-                secondary: const Icon(Icons.dark_mode),
-              ),
-              const Divider(),
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // 알림 섹션
+                    _buildSectionHeader(
+                      '알림',
+                      Icons.notifications_rounded,
+                      isDark,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSettingsCard(
+                      isDark,
+                      children: [
+                        _buildSwitchTile(
+                          icon: Icons.volume_up_rounded,
+                          iconColor: AppColors.accentBlue,
+                          title: '소리',
+                          subtitle: '운동 시작/종료 알림음',
+                          value: settingsProvider.soundEnabled,
+                          onChanged: (value) =>
+                              settingsProvider.setSoundEnabled(value),
+                          isDark: isDark,
+                        ),
+                        _buildDivider(isDark),
+                        _buildSwitchTile(
+                          icon: Icons.vibration_rounded,
+                          iconColor: AppColors.accentOrange,
+                          title: '진동',
+                          subtitle: '운동 시작/종료 진동',
+                          value: settingsProvider.vibrationEnabled,
+                          onChanged: (value) =>
+                              settingsProvider.setVibrationEnabled(value),
+                          isDark: isDark,
+                        ),
+                      ],
+                    ),
 
-              const _SectionHeader(title: '앱 정보'),
-              ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: const Text('버전'),
-                subtitle: const Text('1.0.0'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.description_outlined),
-                title: const Text('오픈소스 라이선스'),
-                onTap: () {
-                  showLicensePage(
-                    context: context,
-                    applicationName: 'TabataFit',
-                    applicationVersion: '1.0.0',
-                  );
-                },
-                trailing: const Icon(Icons.chevron_right),
-              ),
-              ListTile(
-                leading: const Icon(Icons.help_outline),
-                title: const Text('도움말'),
-                onTap: () {
-                  _showHelpDialog(context);
-                },
-                trailing: const Icon(Icons.chevron_right),
-              ),
-              const Divider(),
+                    const SizedBox(height: 24),
 
-              const _SectionHeader(title: '타바타 운동이란?'),
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  '타바타 운동은 일본의 운동생리학자 타바타 이즈미 박사가 개발한 '
-                  '고강도 인터벌 트레이닝(HIIT)입니다.\n\n'
-                  '기본 프로토콜:\n'
-                  '• 20초 운동 (최대 강도)\n'
-                  '• 10초 휴식\n'
-                  '• 8세트 반복\n'
-                  '• 총 4분\n\n'
-                  '짧은 시간에 높은 효과를 얻을 수 있어 바쁜 현대인에게 적합합니다.',
-                  style: TextStyle(fontSize: 14, height: 1.6),
+                    // 화면 섹션
+                    _buildSectionHeader('화면', Icons.palette_rounded, isDark),
+                    const SizedBox(height: 12),
+                    _buildSettingsCard(
+                      isDark,
+                      children: [
+                        _buildSwitchTile(
+                          icon: Icons.dark_mode_rounded,
+                          iconColor: AppColors.primaryRed,
+                          title: '다크 모드',
+                          subtitle: '어두운 테마 사용',
+                          value: settingsProvider.darkMode,
+                          onChanged: (value) =>
+                              settingsProvider.setDarkMode(value),
+                          isDark: isDark,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 앱 정보 섹션
+                    _buildSectionHeader('앱 정보', Icons.info_rounded, isDark),
+                    const SizedBox(height: 12),
+                    _buildSettingsCard(
+                      isDark,
+                      children: [
+                        _buildInfoTile(
+                          icon: Icons.verified_rounded,
+                          iconColor: AppColors.accentGreen,
+                          title: '버전',
+                          trailing: Text(
+                            '1.0.0',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              fontSize: 15,
+                            ),
+                          ),
+                          isDark: isDark,
+                        ),
+                        _buildDivider(isDark),
+                        _buildNavigationTile(
+                          icon: Icons.description_rounded,
+                          iconColor: AppColors.accentBlue,
+                          title: '오픈소스 라이선스',
+                          isDark: isDark,
+                          onTap: () {
+                            showLicensePage(
+                              context: context,
+                              applicationName: 'TabataFit',
+                              applicationVersion: '1.0.0',
+                            );
+                          },
+                        ),
+                        _buildDivider(isDark),
+                        _buildNavigationTile(
+                          icon: Icons.help_rounded,
+                          iconColor: AppColors.accentYellow,
+                          title: '도움말',
+                          isDark: isDark,
+                          onTap: () => _showHelpDialog(context, isDark),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 타바타 소개
+                    _buildSectionHeader(
+                      '타바타 운동이란?',
+                      Icons.fitness_center_rounded,
+                      isDark,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoCard(isDark),
+
+                    const SizedBox(height: 40),
+                  ]),
                 ),
               ),
             ],
@@ -91,58 +175,413 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showHelpDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('도움말'),
-        content: const SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('빠른 시작', style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text('홈 화면에서 "빠른 시작" 버튼을 눌러 기본 타바타 운동을 시작할 수 있습니다.'),
-              SizedBox(height: 16),
-              Text('운동 선택', style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text('운동 탭에서 난이도별로 다양한 운동 프로그램을 선택할 수 있습니다.'),
-              SizedBox(height: 16),
-              Text('통계', style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text('통계 탭에서 운동 기록과 진행 상황을 확인할 수 있습니다.'),
-            ],
+  Widget _buildSectionHeader(String title, IconData icon, bool isDark) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.primaryRed.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: AppColors.primaryRed, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : Colors.black87,
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('확인'),
+      ],
+    );
+  }
+
+  Widget _buildSettingsCard(bool isDark, {required List<Widget> children}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkGray : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _buildDivider(bool isDark) {
+    return Divider(
+      height: 1,
+      indent: 56,
+      color: isDark ? Colors.grey[800] : Colors.grey[200],
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required bool isDark,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? Colors.grey[500] : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: value,
+            onChanged: onChanged,
+            activeColor: AppColors.primaryRed,
           ),
         ],
       ),
     );
   }
-}
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildInfoTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required Widget trailing,
+    required bool isDark,
+  }) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade600,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+          ),
+          trailing,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavigationTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: iconColor, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: isDark ? Colors.grey[600] : Colors.grey[400],
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryRed.withOpacity(isDark ? 0.2 : 0.08),
+            AppColors.primaryRedDark.withOpacity(isDark ? 0.1 : 0.04),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primaryRed.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryRed.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.timer_rounded,
+                  color: AppColors.primaryRed,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '기본 프로토콜',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '타바타 운동은 일본의 운동생리학자 타바타 이즈미 박사가 개발한 고강도 인터벌 트레이닝(HIIT)입니다.',
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.grey[300] : Colors.grey[700],
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildProtocolItem(
+            Icons.fitness_center_rounded,
+            '20초 운동 (최대 강도)',
+            isDark,
+          ),
+          _buildProtocolItem(Icons.pause_circle_rounded, '10초 휴식', isDark),
+          _buildProtocolItem(Icons.repeat_rounded, '8세트 반복', isDark),
+          _buildProtocolItem(Icons.timer_rounded, '총 4분', isDark),
+          const SizedBox(height: 12),
+          Text(
+            '짧은 시간에 높은 효과를 얻을 수 있어 바쁜 현대인에게 적합합니다.',
+            style: TextStyle(
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProtocolItem(IconData icon, String text, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppColors.primaryRed),
+          const SizedBox(width: 10),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.grey[300] : Colors.grey[800],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showHelpDialog(BuildContext context, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkGray : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 핸들
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[700] : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              '도움말',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildHelpItem(
+              Icons.flash_on_rounded,
+              '빠른 시작',
+              '홈 화면에서 "빠른 시작" 버튼을 눌러 기본 타바타 운동을 시작할 수 있습니다.',
+              isDark,
+            ),
+            const SizedBox(height: 16),
+            _buildHelpItem(
+              Icons.fitness_center_rounded,
+              '운동 선택',
+              '운동 탭에서 난이도별로 다양한 운동 프로그램을 선택할 수 있습니다.',
+              isDark,
+            ),
+            const SizedBox(height: 16),
+            _buildHelpItem(
+              Icons.bar_chart_rounded,
+              '통계',
+              '통계 탭에서 운동 기록과 진행 상황을 확인할 수 있습니다.',
+              isDark,
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryRed,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  '확인',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHelpItem(
+    IconData icon,
+    String title,
+    String description,
+    bool isDark,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.primaryRed.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: AppColors.primaryRed, size: 22),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

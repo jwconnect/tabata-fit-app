@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/workout.dart';
+import '../models/exercise.dart';
 import '../providers/timer_provider.dart';
 import '../utils/app_theme.dart';
 import 'timer_screen.dart';
@@ -22,49 +23,7 @@ class WorkoutDetailScreen extends StatelessWidget {
             expandedHeight: 280,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      _getDifficultyColor(workout.difficulty),
-                      _getDifficultyColor(workout.difficulty).withOpacity(0.7),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    // 배경 패턴
-                    Positioned.fill(
-                      child: CustomPaint(painter: _PatternPainter()),
-                    ),
-                    // 아이콘
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 40),
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              _getWorkoutIcon(workout.id),
-                              size: 64,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildDifficultyBadge(workout.difficulty),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              background: _buildHeaderBackground(),
             ),
           ),
 
@@ -144,6 +103,93 @@ class WorkoutDetailScreen extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: _buildBottomBar(context, isDark),
+    );
+  }
+
+  /// 헤더 배경 위젯 (프로그램 이미지 또는 첫 번째 운동 이미지)
+  Widget _buildHeaderBackground() {
+    // 프로그램 이미지 또는 첫 번째 운동 이미지 가져오기
+    String imagePath = ExerciseAssets.getProgramImagePath(workout.id);
+    if (imagePath.isEmpty) {
+      imagePath = ExerciseAssets.getFirstExerciseImage(workout.instructions);
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // 배경 이미지 또는 그라데이션
+        if (imagePath.isNotEmpty)
+          Image.asset(
+            imagePath,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return _buildGradientBackground();
+            },
+          )
+        else
+          _buildGradientBackground(),
+
+        // 그라데이션 오버레이 (하단 어둡게)
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.transparent,
+                Colors.black.withOpacity(0.3),
+                Colors.black.withOpacity(0.7),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: const [0.0, 0.5, 1.0],
+            ),
+          ),
+        ),
+
+        // 난이도 배지
+        Positioned(
+          bottom: 60,
+          left: 0,
+          right: 0,
+          child: Center(child: _buildDifficultyBadge(workout.difficulty)),
+        ),
+      ],
+    );
+  }
+
+  /// 이미지가 없을 때 표시할 그라데이션 배경
+  Widget _buildGradientBackground() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _getDifficultyColor(workout.difficulty),
+            _getDifficultyColor(workout.difficulty).withOpacity(0.7),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Stack(
+        children: [
+          // 배경 패턴
+          Positioned.fill(child: CustomPaint(painter: _PatternPainter())),
+          // 아이콘
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _getWorkoutIcon(workout.id),
+                size: 64,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -276,9 +322,11 @@ class WorkoutDetailScreen extends StatelessWidget {
   }
 
   Widget _buildExerciseItem(int index, String exercise, bool isDark) {
+    final imagePath = ExerciseAssets.getImagePathByName(exercise);
+    final hasImage = imagePath.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkGray : Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -293,41 +341,78 @@ class WorkoutDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              gradient: AppGradients.primaryGradient,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              child: Text(
-                '$index',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+          // 운동 이미지
+          if (hasImage)
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(14),
+              ),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: _getDifficultyColor(
+                        workout.difficulty,
+                      ).withOpacity(0.2),
+                      child: Center(
+                        child: Icon(
+                          Icons.fitness_center,
+                          size: 48,
+                          color: _getDifficultyColor(workout.difficulty),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              exercise,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
+          // 운동 정보
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: AppGradients.primaryGradient,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$index',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    exercise,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.play_circle_outline,
+                  color: isDark ? Colors.grey[600] : Colors.grey[400],
+                  size: 24,
+                ),
+              ],
             ),
-          ),
-          Icon(
-            Icons.play_circle_outline,
-            color: isDark ? Colors.grey[600] : Colors.grey[400],
-            size: 24,
           ),
         ],
       ),

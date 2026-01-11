@@ -28,47 +28,51 @@ class HomeScreen extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
-                    ),
-                  ),
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.primaryRed,
-                          AppColors.primaryRedDark,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          right: -50,
-                          top: -50,
-                          child: Container(
-                            width: 200,
-                            height: 200,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.1),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: -30,
-                          bottom: -30,
-                          child: Container(
-                            width: 150,
-                            height: 150,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.05),
-                            ),
-                          ),
+                      shadows: [
+                        Shadow(
+                          offset: Offset(0, 1),
+                          blurRadius: 3,
+                          color: Colors.black45,
                         ),
                       ],
                     ),
+                  ),
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // 배경 이미지
+                      Image.asset(
+                        'assets/images/ui/bg_home_pattern.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primaryRed,
+                                  AppColors.primaryRedDark,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      // 그라데이션 오버레이
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.5),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -131,9 +135,12 @@ class HomeScreen extends StatelessWidget {
                         Expanded(
                           child: _buildStatCard(
                             icon: Icons.timer,
-                            value: _formatDuration(statsProvider.todaySessions.fold(
-                              0, (sum, s) => sum + s.duration,
-                            )),
+                            value: _formatDuration(
+                              statsProvider.todaySessions.fold(
+                                0,
+                                (sum, s) => sum + s.duration,
+                              ),
+                            ),
                             unit: '',
                             label: '운동 시간',
                             color: AppColors.accentBlue,
@@ -165,9 +172,15 @@ class HomeScreen extends StatelessWidget {
                     if (statsProvider.sessions.isEmpty)
                       _buildEmptyState(isDark)
                     else
-                      ...statsProvider.sessions.reversed.take(3).map(
-                        (session) => _buildSessionCard(session, statsProvider, isDark),
-                      ),
+                      ...statsProvider.sessions.reversed
+                          .take(3)
+                          .map(
+                            (session) => _buildSessionCard(
+                              session,
+                              statsProvider,
+                              isDark,
+                            ),
+                          ),
                     const SizedBox(height: 20),
                   ]),
                 ),
@@ -389,7 +402,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSessionCard(session, StatisticsProvider statsProvider, bool isDark) {
+  Widget _buildSessionCard(
+    session,
+    StatisticsProvider statsProvider,
+    bool isDark,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
