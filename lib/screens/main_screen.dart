@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../utils/app_theme.dart';
 import 'home_screen.dart';
 import 'workout_screen.dart';
@@ -14,6 +15,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _currentIndex = 0;
+  late PageController _pageController;
   late List<AnimationController> _animControllers;
 
   final List<Widget> _screens = const [
@@ -26,18 +28,28 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     _animControllers = List.generate(
       4,
-      (index) => AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 200),
-      ),
+      (index) =>
+          AnimationController(vsync: this, duration: AppAnimations.normal),
     );
     _animControllers[0].forward();
+
+    // 시스템 UI 스타일 설정
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: AppColors.cardDark,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
   }
 
   @override
   void dispose() {
+    _pageController.dispose();
     for (var controller in _animControllers) {
       controller.dispose();
     }
@@ -46,6 +58,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   void _onTabTapped(int index) {
     if (_currentIndex != index) {
+      HapticFeedback.lightImpact();
       _animControllers[_currentIndex].reverse();
       _animControllers[index].forward();
       setState(() {
@@ -56,40 +69,73 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkGray : Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Icons.home_rounded, '홈', 0, isDark),
-                _buildNavItem(Icons.fitness_center_rounded, '운동', 1, isDark),
-                _buildNavItem(Icons.bar_chart_rounded, '통계', 2, isDark),
-                _buildNavItem(Icons.settings_rounded, '설정', 3, isDark),
-              ],
-            ),
+      backgroundColor: AppColors.deepBlack,
+      body: IndexedStack(index: _currentIndex, children: _screens),
+      extendBody: true,
+      bottomNavigationBar: _buildPremiumBottomNav(),
+    );
+  }
+
+  Widget _buildPremiumBottomNav() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.glassBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(
+                icon: Icons.home_rounded,
+                activeIcon: Icons.home_rounded,
+                label: '홈',
+                index: 0,
+              ),
+              _buildNavItem(
+                icon: Icons.fitness_center_outlined,
+                activeIcon: Icons.fitness_center_rounded,
+                label: '운동',
+                index: 1,
+              ),
+              _buildNavItem(
+                icon: Icons.insights_outlined,
+                activeIcon: Icons.insights_rounded,
+                label: '통계',
+                index: 2,
+              ),
+              _buildNavItem(
+                icon: Icons.settings_outlined,
+                activeIcon: Icons.settings_rounded,
+                label: '설정',
+                index: 3,
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index, bool isDark) {
+  Widget _buildNavItem({
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required int index,
+  }) {
     final isSelected = _currentIndex == index;
 
     return GestureDetector(
@@ -98,42 +144,62 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       child: AnimatedBuilder(
         animation: _animControllers[index],
         builder: (context, child) {
-          final scale = 1.0 + (_animControllers[index].value * 0.1);
-          return Transform.scale(
-            scale: scale,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primaryRed.withOpacity(0.12)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    icon,
-                    size: 26,
-                    color: isSelected
-                        ? AppColors.primaryRed
-                        : (isDark ? Colors.grey[500] : Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                      color: isSelected
-                          ? AppColors.primaryRed
-                          : (isDark ? Colors.grey[500] : Colors.grey[600]),
-                    ),
-                  ),
-                ],
-              ),
+          final animValue = _animControllers[index].value;
+          return AnimatedContainer(
+            duration: AppAnimations.fast,
+            padding: EdgeInsets.symmetric(
+              horizontal: isSelected ? 20 : 16,
+              vertical: 10,
+            ),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primaryRed.withOpacity(0.15)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: isSelected ? 1.0 : 0.0),
+                  duration: AppAnimations.normal,
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 1.0 + (value * 0.1),
+                      child: Icon(
+                        isSelected ? activeIcon : icon,
+                        size: 24,
+                        color: Color.lerp(
+                          AppColors.textMuted,
+                          AppColors.primaryRed,
+                          value,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                // 라벨 애니메이션
+                AnimatedSize(
+                  duration: AppAnimations.normal,
+                  curve: Curves.easeOutCubic,
+                  child: isSelected
+                      ? Row(
+                          children: [
+                            const SizedBox(width: 8),
+                            Text(
+                              label,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryRed,
+                              ),
+                            ),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
             ),
           );
         },

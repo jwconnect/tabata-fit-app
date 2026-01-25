@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 enum TimerState { initial, ready, running, paused, finished }
+
 enum IntervalType { prepare, work, rest, cooldown }
 
 class TimerProvider with ChangeNotifier {
@@ -30,9 +31,11 @@ class TimerProvider with ChangeNotifier {
   int get currentSet => _currentSet;
   int get currentTime => _currentTime;
   int get totalTime => _totalTime;
+  int get sets => _sets;
 
   double get progress {
-    if (_state == TimerState.initial || _state == TimerState.finished) return 0.0;
+    if (_state == TimerState.initial || _state == TimerState.finished)
+      return 0.0;
 
     int totalIntervalTime = 0;
     int currentIntervalTime = 0;

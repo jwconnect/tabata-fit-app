@@ -41,7 +41,8 @@ class TabataFitApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: settings.darkMode ? ThemeMode.dark : ThemeMode.light,
+          // 항상 다크 모드 사용 (프리미엄 디자인)
+          themeMode: ThemeMode.dark,
           home: const MainScreen(),
         );
       },

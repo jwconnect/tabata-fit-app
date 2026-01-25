@@ -103,12 +103,15 @@ class ExerciseAssets {
   /// 프로그램 ID → 대표 이미지 경로 매핑
   static const String _programBasePath = 'assets/images/programs/';
   static const Map<String, String> _programImages = {
+    // 초보자
     'tabata_beginner': '${_programBasePath}img_program_beginner.png',
     'tabata_lower_body': '${_programBasePath}img_program_lower_body.png',
+    // 중급자
     'tabata_intermediate': '${_programBasePath}img_program_intermediate.png',
     'tabata_cardio': '${_programBasePath}img_program_cardio.png',
     'tabata_core': '${_programBasePath}img_program_core.png',
     'tabata_upper_body': '${_programBasePath}img_program_upper_body.png',
+    // 고급자
     'tabata_classic': '${_programBasePath}img_program_classic.png',
     'tabata_extreme': '${_programBasePath}img_program_extreme.png',
     'tabata_hiit': '${_programBasePath}img_program_hiit.png',
@@ -134,14 +137,13 @@ class ExerciseAssets {
   static const String _iconBasePath = 'assets/images/icons/';
 
   /// 카테고리 ID → 아이콘 경로 매핑
-  /// ai_prompt_guide.md 섹션 2.3 운동 카테고리 아이콘 참조
   static const Map<String, String> _categoryIcons = {
-    'fullbody': '${_iconBasePath}ic_category_fullbody.png', // 전신 운동
-    'upperbody': '${_iconBasePath}ic_category_upper_body.png', // 상체 운동
-    'lowerbody': '${_iconBasePath}ic_category_lowerbody.png', // 하체 운동
-    'core': '${_iconBasePath}ic_category_core.png', // 코어 운동
-    'cardio': '${_iconBasePath}ic_category_cardio.png', // 유산소
-    'hiit': '${_iconBasePath}ic_category_hiit.png', // HIIT
+    'fullbody': '${_iconBasePath}ic_category_fullbody.png',
+    'upperbody': '${_iconBasePath}ic_category_upper_body.png',
+    'lowerbody': '${_iconBasePath}ic_category_lowerbody.png',
+    'core': '${_iconBasePath}ic_category_core.png',
+    'cardio': '${_iconBasePath}ic_category_cardio.png',
+    'hiit': '${_iconBasePath}ic_category_hiit.png',
   };
 
   /// 근육 그룹 이름 → 카테고리 ID 매핑
@@ -226,4 +228,46 @@ class ExerciseAssets {
 
   /// 앱 런처 아이콘 경로
   static const String launcherIcon = '${_iconBasePath}ic_launcher.png';
+
+  /// 운동 비디오 경로
+  static const String _videoBasePath = 'assets/videos/';
+
+  /// 운동 ID → 비디오 경로 매핑
+  static const Map<String, String> _exerciseVideos = {
+    'squat_basic': '${_videoBasePath}squat.mp4',
+    'squat': '${_videoBasePath}squat.mp4',
+    'marching': '${_videoBasePath}walk.mp4',
+    'high_knees': '${_videoBasePath}high_knees.mp4',
+  };
+
+  /// 운동 이름(한글) → 비디오 경로 매핑
+  static const Map<String, String> _exerciseNameToVideo = {
+    '스쿼트': '${_videoBasePath}squat.mp4',
+    '스쿼트 (기본)': '${_videoBasePath}squat.mp4',
+    '제자리 걷기': '${_videoBasePath}walk.mp4',
+    '무릎 올리기': '${_videoBasePath}high_knees.mp4',
+  };
+
+  /// 운동 ID를 비디오 경로로 변환
+  static String getVideoPath(String exerciseId) {
+    return _exerciseVideos[exerciseId] ?? '';
+  }
+
+  /// 운동 이름(한글)을 비디오 경로로 변환
+  static String getVideoPathByName(String exerciseName) {
+    return _exerciseNameToVideo[exerciseName] ?? '';
+  }
+
+  /// 난이도 배지 이미지 경로 (GIF 애니메이션)
+  static const String _badgeBasePath = 'assets/images/badge/';
+  static const Map<String, String> _difficultyBadges = {
+    'BEGINNER': '${_badgeBasePath}badge_beginner.gif',
+    'INTERMEDIATE': '${_badgeBasePath}badge_intermediate.gif',
+    'ADVANCED': '${_badgeBasePath}badge_advanced.gif',
+  };
+
+  /// 난이도에 해당하는 배지 이미지 경로 가져오기
+  static String getDifficultyBadgePath(String difficulty) {
+    return _difficultyBadges[difficulty] ?? '';
+  }
 }

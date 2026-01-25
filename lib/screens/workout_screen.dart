@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
 import '../models/workout.dart';
@@ -6,106 +7,54 @@ import '../models/exercise.dart';
 import '../utils/app_theme.dart';
 import 'workout_detail_screen.dart';
 
-class WorkoutScreen extends StatelessWidget {
+class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  State<WorkoutScreen> createState() => _WorkoutScreenState();
+}
 
+class _WorkoutScreenState extends State<WorkoutScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.deepBlack,
       body: Consumer<WorkoutProvider>(
         builder: (context, workoutProvider, child) {
           return CustomScrollView(
+            physics: const BouncingScrollPhysics(),
             slivers: [
-              // 세련된 앱바
-              SliverAppBar(
-                expandedHeight: 140,
-                floating: false,
-                pinned: true,
-                backgroundColor: isDark ? AppColors.darkGray : Colors.white,
-                flexibleSpace: FlexibleSpaceBar(
-                  title: Text(
-                    '운동 프로그램',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontSize: 20,
-                    ),
-                  ),
-                  centerTitle: false,
-                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isDark
-                            ? [AppColors.darkGray, AppColors.deepBlack]
-                            : [Colors.white, AppColors.lightGray],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // 난이도 필터
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildFilterChip(
-                          context,
-                          '전체',
-                          'ALL',
-                          workoutProvider,
-                          isDark,
-                        ),
-                        const SizedBox(width: 10),
-                        _buildFilterChip(
-                          context,
-                          '초보자',
-                          'BEGINNER',
-                          workoutProvider,
-                          isDark,
-                        ),
-                        const SizedBox(width: 10),
-                        _buildFilterChip(
-                          context,
-                          '중급자',
-                          'INTERMEDIATE',
-                          workoutProvider,
-                          isDark,
-                        ),
-                        const SizedBox(width: 10),
-                        _buildFilterChip(
-                          context,
-                          '고급자',
-                          'ADVANCED',
-                          workoutProvider,
-                          isDark,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              // 프리미엄 헤더
+              SliverToBoxAdapter(child: _buildHeader(workoutProvider)),
 
               // 운동 목록
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final workout = workoutProvider.workouts[index];
-                    return _buildWorkoutCard(context, workout, isDark);
+                    return _buildWorkoutCard(context, workout, index);
                   }, childCount: workoutProvider.workouts.length),
                 ),
               ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
             ],
           );
         },
@@ -113,61 +62,136 @@ class WorkoutScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildHeader(WorkoutProvider provider) {
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 20,
+        left: 20,
+        right: 20,
+        bottom: 20,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 타이틀
+          const Text(
+            '운동 프로그램',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${provider.workouts.length}개의 프로그램',
+            style: TextStyle(fontSize: 15, color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 24),
+
+          // 난이도 필터
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                _buildFilterChip('전체', 'ALL', provider),
+                const SizedBox(width: 10),
+                _buildFilterChip(
+                  '초보자',
+                  'BEGINNER',
+                  provider,
+                  color: AppColors.beginnerGreen,
+                ),
+                const SizedBox(width: 10),
+                _buildFilterChip(
+                  '중급자',
+                  'INTERMEDIATE',
+                  provider,
+                  color: AppColors.intermediateOrange,
+                ),
+                const SizedBox(width: 10),
+                _buildFilterChip(
+                  '고급자',
+                  'ADVANCED',
+                  provider,
+                  color: AppColors.advancedRed,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFilterChip(
-    BuildContext context,
     String label,
     String value,
-    WorkoutProvider provider,
-    bool isDark,
-  ) {
+    WorkoutProvider provider, {
+    Color? color,
+  }) {
     final isSelected = provider.selectedDifficulty == value;
-
-    Color chipColor;
-    if (value == 'BEGINNER') {
-      chipColor = AppColors.beginnerGreen;
-    } else if (value == 'INTERMEDIATE') {
-      chipColor = AppColors.intermediateOrange;
-    } else if (value == 'ADVANCED') {
-      chipColor = AppColors.advancedRed;
-    } else {
-      chipColor = AppColors.primaryRed;
-    }
+    final chipColor = color ?? AppColors.primaryRed;
 
     return GestureDetector(
-      onTap: () => provider.setDifficulty(value),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        provider.setDifficulty(value);
+      },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        duration: AppAnimations.normal,
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? chipColor
-              : (isDark ? AppColors.mediumGray : Colors.grey[200]),
-          borderRadius: BorderRadius.circular(25),
+          gradient: isSelected
+              ? LinearGradient(colors: [chipColor, chipColor.withOpacity(0.8)])
+              : null,
+          color: isSelected ? null : AppColors.cardDark,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : AppColors.glassBorder,
+          ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
                     color: chipColor.withOpacity(0.4),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ]
               : null,
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected
-                ? Colors.white
-                : (isDark ? Colors.grey[400] : Colors.grey[700]),
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            fontSize: 14,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (value != 'ALL') ...[
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : chipColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildWorkoutCard(BuildContext context, Workout workout, bool isDark) {
+  Widget _buildWorkoutCard(BuildContext context, Workout workout, int index) {
     // 프로그램 이미지 또는 첫 번째 운동 이미지 가져오기
     String imagePath = ExerciseAssets.getProgramImagePath(workout.id);
     if (imagePath.isEmpty) {
@@ -175,31 +199,42 @@ class WorkoutScreen extends StatelessWidget {
     }
     final hasImage = imagePath.isNotEmpty;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkGray : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 400 + (index * 100)),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 30 * (1 - value)),
+            child: child,
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _openWorkoutDetail(context, workout),
-          borderRadius: BorderRadius.circular(20),
+        );
+      },
+      child: GestureDetector(
+        onTap: () => _openWorkoutDetail(context, workout),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          decoration: BoxDecoration(
+            color: AppColors.cardDark,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.glassBorder),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 썸네일 이미지
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
+                  top: Radius.circular(24),
                 ),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
@@ -221,12 +256,10 @@ class WorkoutScreen extends StatelessWidget {
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              Colors.transparent,
                               Colors.black.withOpacity(0.7),
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            stops: const [0.0, 0.5, 1.0],
                           ),
                         ),
                       ),
@@ -236,11 +269,38 @@ class WorkoutScreen extends StatelessWidget {
                         right: 16,
                         child: _buildDifficultyBadge(workout.difficulty),
                       ),
-                      // 운동 시간 표시
+                      // 운동 정보 오버레이
                       Positioned(
                         bottom: 16,
                         left: 16,
-                        child: _buildTimeIndicator(workout.difficulty),
+                        right: 16,
+                        child: Row(
+                          children: [
+                            _buildInfoChip(
+                              Icons.timer_outlined,
+                              _getWorkoutDuration(workout.difficulty),
+                            ),
+                            const SizedBox(width: 10),
+                            _buildInfoChip(
+                              Icons.repeat,
+                              '${_getWorkoutSets(workout.difficulty)}세트',
+                            ),
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryRed,
+                                shape: BoxShape.circle,
+                                boxShadow: AppShadows.glow,
+                              ),
+                              child: const Icon(
+                                Icons.play_arrow_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -252,53 +312,34 @@ class WorkoutScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 제목과 화살표
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            workout.name,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryRed.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.arrow_forward_rounded,
-                            color: AppColors.primaryRed,
-                            size: 20,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      workout.name,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.3,
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Text(
                       workout.description,
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        color: AppColors.textMuted,
                         height: 1.4,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 16),
-                    // 운동 동작 태그
+                    // 근육 그룹 태그
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: workout.instructions
-                          .take(4)
-                          .map(
-                            (exercise) => _buildExerciseTag(exercise, isDark),
-                          )
+                      children: workout.muscleGroups
+                          .take(3)
+                          .map((muscle) => _buildMuscleTag(muscle))
                           .toList(),
                     ),
                   ],
@@ -311,78 +352,47 @@ class WorkoutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildExerciseTag(String exercise, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.mediumGray
-            : AppColors.primaryRed.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        exercise,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: isDark ? Colors.grey[300] : AppColors.primaryRed,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimeIndicator(String difficulty) {
-    int minutes;
-    int sets;
-
-    switch (difficulty) {
-      case 'BEGINNER':
-        minutes = 6;
-        sets = 6;
-        break;
-      case 'INTERMEDIATE':
-        minutes = 8;
-        sets = 8;
-        break;
-      case 'ADVANCED':
-        minutes = 10;
-        sets = 10;
-        break;
-      default:
-        minutes = 8;
-        sets = 8;
-    }
-
+  Widget _buildInfoChip(IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.timer_outlined, color: Colors.white, size: 16),
+          Icon(icon, color: Colors.white, size: 16),
           const SizedBox(width: 6),
           Text(
-            '약 $minutes분',
+            text,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
           ),
-          Container(
-            width: 1,
-            height: 12,
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            color: Colors.white38,
-          ),
-          Text(
-            '$sets세트',
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMuscleTag(String muscle) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      child: Text(
+        muscle,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textSecondary,
+        ),
       ),
     );
   }
@@ -402,7 +412,7 @@ class WorkoutScreen extends StatelessWidget {
         bgColor = AppColors.advancedRed;
         break;
       default:
-        bgColor = Colors.grey;
+        bgColor = AppColors.primaryRed;
     }
 
     if (workout.id.contains('cardio')) {
@@ -423,60 +433,77 @@ class WorkoutScreen extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
       ),
-      child: Stack(
-        children: [
-          // 배경 패턴
-          Positioned.fill(
-            child: CustomPaint(painter: _CirclePatternPainter(bgColor)),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            shape: BoxShape.circle,
           ),
-          // 중앙 아이콘
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 48, color: Colors.white),
-            ),
-          ),
-        ],
+          child: Icon(icon, size: 48, color: Colors.white),
+        ),
       ),
     );
   }
 
   Widget _buildDifficultyBadge(String difficulty) {
-    Color color;
-    String label;
-    IconData icon;
+    final badgePath = ExerciseAssets.getDifficultyBadgePath(difficulty);
 
+    Color glowColor;
+    String label;
     switch (difficulty) {
       case 'BEGINNER':
-        color = AppColors.beginnerGreen;
+        glowColor = AppColors.beginnerGreen;
         label = '초보자';
-        icon = Icons.eco_rounded;
         break;
       case 'INTERMEDIATE':
-        color = AppColors.intermediateOrange;
+        glowColor = AppColors.intermediateOrange;
         label = '중급자';
-        icon = Icons.local_fire_department_rounded;
         break;
       case 'ADVANCED':
-        color = AppColors.advancedRed;
+        glowColor = AppColors.advancedRed;
         label = '고급자';
-        icon = Icons.whatshot_rounded;
         break;
       default:
-        color = Colors.grey;
+        glowColor = Colors.white;
         label = difficulty;
-        icon = Icons.fitness_center;
     }
 
+    if (badgePath.isNotEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.4),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: glowColor.withOpacity(0.5)),
+          boxShadow: [
+            BoxShadow(
+              color: glowColor.withOpacity(0.5),
+              blurRadius: 12,
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Image.asset(
+          badgePath,
+          height: 28,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildTextBadge(label, glowColor);
+          },
+        ),
+      );
+    }
+
+    return _buildTextBadge(label, glowColor);
+  }
+
+  Widget _buildTextBadge(String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(colors: [color, color.withOpacity(0.8)]),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(0.4),
@@ -485,63 +512,69 @@ class WorkoutScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-          ),
-        ],
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
       ),
     );
+  }
+
+  String _getWorkoutDuration(String difficulty) {
+    switch (difficulty) {
+      case 'BEGINNER':
+        return '약 6분';
+      case 'INTERMEDIATE':
+        return '약 8분';
+      case 'ADVANCED':
+        return '약 10분';
+      default:
+        return '약 8분';
+    }
+  }
+
+  int _getWorkoutSets(String difficulty) {
+    switch (difficulty) {
+      case 'BEGINNER':
+        return 6;
+      case 'INTERMEDIATE':
+        return 8;
+      case 'ADVANCED':
+        return 10;
+      default:
+        return 8;
+    }
   }
 
   void _openWorkoutDetail(BuildContext context, Workout workout) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => WorkoutDetailScreen(workout: workout),
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            WorkoutDetailScreen(workout: workout),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 0.05),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
-}
-
-class _CirclePatternPainter extends CustomPainter {
-  final Color baseColor;
-
-  _CirclePatternPainter(this.baseColor);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
-      ..style = PaintingStyle.fill;
-
-    // 원형 패턴
-    canvas.drawCircle(
-      Offset(size.width * 0.1, size.height * 0.2),
-      size.width * 0.15,
-      paint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.3),
-      size.width * 0.2,
-      paint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.2, size.height * 0.8),
-      size.width * 0.1,
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

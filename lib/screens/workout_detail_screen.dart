@@ -1,19 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
 import '../providers/timer_provider.dart';
 import '../utils/app_theme.dart';
 import 'timer_screen.dart';
 
-class WorkoutDetailScreen extends StatelessWidget {
+class WorkoutDetailScreen extends StatefulWidget {
   final Workout workout;
 
   const WorkoutDetailScreen({super.key, required this.workout});
 
   @override
+  State<WorkoutDetailScreen> createState() => _WorkoutDetailScreenState();
+}
+
+class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
+  void _openFullScreenVideo(String exerciseName) {
+    final videoPath = ExerciseAssets.getVideoPathByName(exerciseName);
+    if (videoPath.isEmpty) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => _FullScreenVideoPlayer(
+          videoPath: videoPath,
+          exerciseName: exerciseName,
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final workout = widget.workout;
 
     return Scaffold(
       body: CustomScrollView(
@@ -109,9 +131,11 @@ class WorkoutDetailScreen extends StatelessWidget {
   /// 헤더 배경 위젯 (프로그램 이미지 또는 첫 번째 운동 이미지)
   Widget _buildHeaderBackground() {
     // 프로그램 이미지 또는 첫 번째 운동 이미지 가져오기
-    String imagePath = ExerciseAssets.getProgramImagePath(workout.id);
+    String imagePath = ExerciseAssets.getProgramImagePath(widget.workout.id);
     if (imagePath.isEmpty) {
-      imagePath = ExerciseAssets.getFirstExerciseImage(workout.instructions);
+      imagePath = ExerciseAssets.getFirstExerciseImage(
+        widget.workout.instructions,
+      );
     }
 
     return Stack(
@@ -150,7 +174,9 @@ class WorkoutDetailScreen extends StatelessWidget {
           bottom: 60,
           left: 0,
           right: 0,
-          child: Center(child: _buildDifficultyBadge(workout.difficulty)),
+          child: Center(
+            child: _buildDifficultyBadge(widget.workout.difficulty),
+          ),
         ),
       ],
     );
@@ -162,8 +188,8 @@ class WorkoutDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            _getDifficultyColor(workout.difficulty),
-            _getDifficultyColor(workout.difficulty).withOpacity(0.7),
+            _getDifficultyColor(widget.workout.difficulty),
+            _getDifficultyColor(widget.workout.difficulty).withOpacity(0.7),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -182,7 +208,7 @@ class WorkoutDetailScreen extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                _getWorkoutIcon(workout.id),
+                _getWorkoutIcon(widget.workout.id),
                 size: 64,
                 color: Colors.white,
               ),
@@ -220,15 +246,15 @@ class WorkoutDetailScreen extends StatelessWidget {
     int restTime = 10;
     int sets = 8;
 
-    if (workout.difficulty == 'BEGINNER') {
+    if (widget.workout.difficulty == 'BEGINNER') {
       workTime = 20;
       restTime = 15;
       sets = 6;
-    } else if (workout.difficulty == 'INTERMEDIATE') {
+    } else if (widget.workout.difficulty == 'INTERMEDIATE') {
       workTime = 20;
       restTime = 10;
       sets = 8;
-    } else if (workout.difficulty == 'ADVANCED') {
+    } else if (widget.workout.difficulty == 'ADVANCED') {
       workTime = 25;
       restTime = 10;
       sets = 10;
@@ -324,6 +350,8 @@ class WorkoutDetailScreen extends StatelessWidget {
   Widget _buildExerciseItem(int index, String exercise, bool isDark) {
     final imagePath = ExerciseAssets.getImagePathByName(exercise);
     final hasImage = imagePath.isNotEmpty;
+    final videoPath = ExerciseAssets.getVideoPathByName(exercise);
+    final hasVideo = videoPath.isNotEmpty;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -344,31 +372,69 @@ class WorkoutDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 운동 이미지
+          // 운동 이미지 (비디오가 있으면 재생 버튼 오버레이)
           if (hasImage)
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(14),
-              ),
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: _getDifficultyColor(
-                        workout.difficulty,
-                      ).withOpacity(0.2),
-                      child: Center(
-                        child: Icon(
-                          Icons.fitness_center,
-                          size: 48,
-                          color: _getDifficultyColor(workout.difficulty),
-                        ),
+            GestureDetector(
+              onTap: hasVideo ? () => _openFullScreenVideo(exercise) : null,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(14),
+                ),
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(
+                        imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: _getDifficultyColor(
+                              widget.workout.difficulty,
+                            ).withOpacity(0.2),
+                            child: Center(
+                              child: Icon(
+                                Icons.fitness_center,
+                                size: 48,
+                                color: _getDifficultyColor(
+                                  widget.workout.difficulty,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                      // 비디오가 있으면 재생 버튼 오버레이
+                      if (hasVideo)
+                        Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryRed,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primaryRed.withOpacity(
+                                      0.5,
+                                    ),
+                                    blurRadius: 16,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              padding: const EdgeInsets.all(16),
+                              child: const Icon(
+                                Icons.play_arrow,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -406,11 +472,14 @@ class WorkoutDetailScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(
-                  Icons.play_circle_outline,
-                  color: isDark ? Colors.grey[600] : Colors.grey[400],
-                  size: 24,
-                ),
+                if (hasVideo)
+                  Icon(Icons.videocam, color: AppColors.primaryRed, size: 24)
+                else
+                  Icon(
+                    Icons.image,
+                    color: isDark ? Colors.grey[600] : Colors.grey[400],
+                    size: 24,
+                  ),
               ],
             ),
           ),
@@ -428,7 +497,7 @@ class WorkoutDetailScreen extends StatelessWidget {
         border: Border.all(color: AppColors.accentYellow.withOpacity(0.3)),
       ),
       child: Column(
-        children: workout.tips
+        children: widget.workout.tips
             .map(
               (tip) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
@@ -521,6 +590,61 @@ class WorkoutDetailScreen extends StatelessWidget {
   }
 
   Widget _buildDifficultyBadge(String difficulty) {
+    final badgePath = ExerciseAssets.getDifficultyBadgePath(difficulty);
+
+    // 난이도별 글로우 색상
+    Color glowColor;
+    switch (difficulty) {
+      case 'BEGINNER':
+        glowColor = AppColors.beginnerGreen;
+        break;
+      case 'INTERMEDIATE':
+        glowColor = AppColors.intermediateOrange;
+        break;
+      case 'ADVANCED':
+        glowColor = AppColors.advancedRed;
+        break;
+      default:
+        glowColor = Colors.white;
+    }
+
+    if (badgePath.isNotEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.4),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: glowColor.withOpacity(0.6), width: 2),
+          boxShadow: [
+            // 외부 글로우
+            BoxShadow(
+              color: glowColor.withOpacity(0.7),
+              blurRadius: 16,
+              spreadRadius: 2,
+            ),
+            // 내부 그림자
+            BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Image.asset(
+          badgePath,
+          height: 36,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildFallbackBadge(difficulty);
+          },
+        ),
+      );
+    }
+
+    return _buildFallbackBadge(difficulty);
+  }
+
+  Widget _buildFallbackBadge(String difficulty) {
     String label;
     switch (difficulty) {
       case 'BEGINNER':
@@ -586,15 +710,15 @@ class WorkoutDetailScreen extends StatelessWidget {
     int restTime = 10;
     int sets = 8;
 
-    if (workout.difficulty == 'BEGINNER') {
+    if (widget.workout.difficulty == 'BEGINNER') {
       workTime = 20;
       restTime = 15;
       sets = 6;
-    } else if (workout.difficulty == 'INTERMEDIATE') {
+    } else if (widget.workout.difficulty == 'INTERMEDIATE') {
       workTime = 20;
       restTime = 10;
       sets = 8;
-    } else if (workout.difficulty == 'ADVANCED') {
+    } else if (widget.workout.difficulty == 'ADVANCED') {
       workTime = 25;
       restTime = 10;
       sets = 10;
@@ -638,4 +762,171 @@ class _PatternPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// 전체 화면 비디오 플레이어
+class _FullScreenVideoPlayer extends StatefulWidget {
+  final String videoPath;
+  final String exerciseName;
+
+  const _FullScreenVideoPlayer({
+    required this.videoPath,
+    required this.exerciseName,
+  });
+
+  @override
+  State<_FullScreenVideoPlayer> createState() => _FullScreenVideoPlayerState();
+}
+
+class _FullScreenVideoPlayerState extends State<_FullScreenVideoPlayer> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.asset(widget.videoPath)
+      ..initialize().then((_) {
+        if (mounted) {
+          setState(() {
+            _isInitialized = true;
+          });
+          _controller.setLooping(true);
+          _controller.play();
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _togglePlayPause() {
+    setState(() {
+      if (_controller.value.isPlaying) {
+        _controller.pause();
+      } else {
+        _controller.play();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // 비디오 플레이어
+            if (_isInitialized)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _togglePlayPause,
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _controller.value.size.width,
+                      height: _controller.value.size.height,
+                      child: VideoPlayer(_controller),
+                    ),
+                  ),
+                ),
+              )
+            else
+              const Center(
+                child: CircularProgressIndicator(color: AppColors.primaryRed),
+              ),
+
+            // 상단 헤더
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        widget.exerciseName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 재생/일시정지 버튼 (중앙)
+            if (_isInitialized && !_controller.value.isPlaying)
+              Center(
+                child: GestureDetector(
+                  onTap: _togglePlayPause,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryRed,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryRed.withOpacity(0.5),
+                          blurRadius: 20,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 48,
+                    ),
+                  ),
+                ),
+              ),
+
+            // 하단 프로그레스 바
+            if (_isInitialized)
+              Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: VideoProgressIndicator(
+                  _controller,
+                  allowScrubbing: true,
+                  colors: const VideoProgressColors(
+                    playedColor: AppColors.primaryRed,
+                    bufferedColor: Colors.white24,
+                    backgroundColor: Colors.white12,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
