@@ -234,18 +234,50 @@ class ExerciseAssets {
 
   /// 운동 ID → 비디오 경로 매핑
   static const Map<String, String> _exerciseVideos = {
+    // 초보자 운동
     'squat_basic': '${_videoBasePath}squat.mp4',
     'squat': '${_videoBasePath}squat.mp4',
     'marching': '${_videoBasePath}walk.mp4',
     'high_knees': '${_videoBasePath}high_knees.mp4',
+    'wall_pushup': '${_videoBasePath}wall_pushup.mp4',
+    'plank_basic': '${_videoBasePath}flank.mp4',
+    'lunge_basic': '${_videoBasePath}lunge.mp4',
+    'calf_raise': '${_videoBasePath}caff_raise.mp4',
+    'glute_bridge': '${_videoBasePath}glute_bridge.mp4',
+    // 중급자 운동
+    'jump_squat': '${_videoBasePath}jump_squat.mp4',
+    'pushup': '${_videoBasePath}pushup.mp4',
+    'plank_jack': '${_videoBasePath}plank_jack.mp4',
+    'jumping_jack': '${_videoBasePath}jumping_jack.mp4',
+    'mountain_climber': '${_videoBasePath}mountain_climber.mp4',
+    'crunch': '${_videoBasePath}crunch.mp4',
+    'leg_raise': '${_videoBasePath}leg_raise.mp4',
+    'russian_twist': '${_videoBasePath}russian_twist.mp4',
   };
 
   /// 운동 이름(한글) → 비디오 경로 매핑
   static const Map<String, String> _exerciseNameToVideo = {
+    // 초보자 운동
     '스쿼트': '${_videoBasePath}squat.mp4',
     '스쿼트 (기본)': '${_videoBasePath}squat.mp4',
     '제자리 걷기': '${_videoBasePath}walk.mp4',
     '무릎 올리기': '${_videoBasePath}high_knees.mp4',
+    '벽 푸시업': '${_videoBasePath}wall_pushup.mp4',
+    '플랭크': '${_videoBasePath}flank.mp4',
+    '플랭크 (기본)': '${_videoBasePath}flank.mp4',
+    '런지': '${_videoBasePath}lunge.mp4',
+    '런지 (기본)': '${_videoBasePath}lunge.mp4',
+    '카프레이즈': '${_videoBasePath}caff_raise.mp4',
+    '글루트 브릿지': '${_videoBasePath}glute_bridge.mp4',
+    // 중급자 운동
+    '점프 스쿼트': '${_videoBasePath}jump_squat.mp4',
+    '푸시업': '${_videoBasePath}pushup.mp4',
+    '플랭크 잭': '${_videoBasePath}plank_jack.mp4',
+    '점핑잭': '${_videoBasePath}jumping_jack.mp4',
+    '마운틴 클라이머': '${_videoBasePath}mountain_climber.mp4',
+    '크런치': '${_videoBasePath}crunch.mp4',
+    '레그레이즈': '${_videoBasePath}leg_raise.mp4',
+    '러시안 트위스트': '${_videoBasePath}russian_twist.mp4',
   };
 
   /// 운동 ID를 비디오 경로로 변환
