@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -59,23 +60,41 @@ class _TimerScreenState extends State<TimerScreen>
     if (videoPath == _currentVideoPath && _isVideoInitialized) return;
 
     _currentVideoPath = videoPath;
+    _videoController?.removeListener(_onVideoUpdate);
     _videoController?.dispose();
     _isVideoInitialized = false;
 
-    _videoController = VideoPlayerController.asset(videoPath)
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _isVideoInitialized = true;
-          });
-          _videoController?.setLooping(true);
-          _videoController?.setVolume(0);
-          _videoController?.play();
-        }
-      });
+    // 단일 비디오 컨트롤러 사용 (블러 배경과 메인 비디오 공유)
+    _videoController = VideoPlayerController.asset(videoPath);
+    _videoController!.addListener(_onVideoUpdate);
+    _videoController!.initialize().then((_) {
+      if (mounted && _videoController != null) {
+        _videoController!.setLooping(true);
+        _videoController!.setVolume(0);
+        _videoController!.play();
+        setState(() {
+          _isVideoInitialized = true;
+        });
+      }
+    });
+  }
+
+  void _onVideoUpdate() {
+    // 재생 상태 변경시에만 UI 갱신 (초기화 완료, 재생 시작/정지 등)
+    if (mounted && _videoController != null) {
+      final isPlaying = _videoController!.value.isPlaying;
+      final isInitialized = _videoController!.value.isInitialized;
+      // 상태 변경이 있을 때만 setState 호출
+      if (isInitialized && !_isVideoInitialized) {
+        setState(() {
+          _isVideoInitialized = true;
+        });
+      }
+    }
   }
 
   void _disposeVideo() {
+    _videoController?.removeListener(_onVideoUpdate);
     _videoController?.dispose();
     _videoController = null;
     _isVideoInitialized = false;
@@ -86,6 +105,7 @@ class _TimerScreenState extends State<TimerScreen>
   void dispose() {
     _pulseController.dispose();
     _glowController.dispose();
+    _videoController?.removeListener(_onVideoUpdate);
     _videoController?.dispose();
     super.dispose();
   }
@@ -215,18 +235,49 @@ class _TimerScreenState extends State<TimerScreen>
               // 전체 화면 비디오 배경
               if (showFullScreenVideo &&
                   _isVideoInitialized &&
-                  _videoController != null)
+                  _videoController != null &&
+                  _videoController!.value.isInitialized) ...[
+                // 1. 그라데이션 배경
                 Positioned.fill(
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                      width: _videoController!.value.size.width,
-                      height: _videoController!.value.size.height,
-                      child: VideoPlayer(_videoController!),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: Alignment.center,
+                        radius: 1.2,
+                        colors: [
+                          intervalColor.withOpacity(0.4),
+                          AppColors.deepBlack,
+                        ],
+                      ),
                     ),
                   ),
-                )
-              else if (showFullScreenVideo)
+                ),
+                // 2. 메인 비디오 (원본 비율)
+                Positioned.fill(
+                  child: Center(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: intervalColor.withOpacity(0.4),
+                            blurRadius: 30,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: AspectRatio(
+                          aspectRatio: _videoController!.value.aspectRatio,
+                          child: VideoPlayer(_videoController!),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ] else if (showFullScreenVideo)
                 // 비디오 로딩 중 배경
                 Positioned.fill(
                   child: AnimatedBuilder(
@@ -290,57 +341,78 @@ class _TimerScreenState extends State<TimerScreen>
                 ),
 
               // 메인 UI
-              SafeArea(
-                child: Column(
-                  children: [
-                    // 상단 바
-                    _buildTopBar(timerProvider),
+              Builder(
+                builder: (context) {
+                  // 반응형 레이아웃 값 계산
+                  final screenSize = MediaQuery.of(context).size;
+                  final shortestSide = screenSize.shortestSide;
+                  final baseUnit = shortestSide / 100;
 
-                    const Spacer(flex: 1),
+                  final bottomPadding = (baseUnit * 5).clamp(16.0, 40.0);
+                  final spacingLarge = (baseUnit * 8).clamp(30.0, 60.0);
+                  final spacingMedium = (baseUnit * 6).clamp(24.0, 50.0);
 
-                    // 전체화면 비디오 모드 UI (운동/준비/휴식)
-                    if (showFullScreenVideo)
-                      _buildFullScreenVideoOverlay(
-                        timerProvider,
-                        intervalType,
-                        intervalColor,
-                        currentTime,
-                        progress,
-                        currentSet,
-                        totalSets,
-                        state,
-                      )
-                    else ...[
-                      // 기존 UI (정리운동/완료)
-                      _buildIntervalBadge(intervalType, intervalColor),
-                      const SizedBox(height: 50),
-                      _buildMainTimer(
-                        currentTime,
-                        progress,
-                        intervalColor,
-                        state,
-                      ),
-                      const SizedBox(height: 40),
-                      if (currentSet > 0)
-                        _buildSetIndicator(
-                          currentSet,
-                          totalSets,
-                          intervalColor,
+                  return SafeArea(
+                    child: Column(
+                      children: [
+                        // 상단 바
+                        _buildTopBar(timerProvider),
+
+                        // 중앙 콘텐츠 영역
+                        Expanded(
+                          child: Center(
+                            child: SingleChildScrollView(
+                              child: showFullScreenVideo
+                                  ? _buildFullScreenVideoOverlay(
+                                      timerProvider,
+                                      intervalType,
+                                      intervalColor,
+                                      currentTime,
+                                      progress,
+                                      currentSet,
+                                      totalSets,
+                                      state,
+                                    )
+                                  : Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // 기존 UI (정리운동/완료)
+                                        _buildIntervalBadge(
+                                          intervalType,
+                                          intervalColor,
+                                        ),
+                                        SizedBox(height: spacingLarge),
+                                        _buildMainTimer(
+                                          currentTime,
+                                          progress,
+                                          intervalColor,
+                                          state,
+                                        ),
+                                        SizedBox(height: spacingMedium),
+                                        if (currentSet > 0)
+                                          _buildSetIndicator(
+                                            currentSet,
+                                            totalSets,
+                                            intervalColor,
+                                          ),
+                                      ],
+                                    ),
+                            ),
+                          ),
                         ),
-                    ],
 
-                    const Spacer(flex: 1),
+                        // 완료 메시지
+                        if (state == TimerState.finished)
+                          _buildCompletionCard(context, timerProvider),
 
-                    // 완료 메시지
-                    if (state == TimerState.finished)
-                      _buildCompletionCard(context, timerProvider),
+                        // 컨트롤 버튼
+                        _buildControlButtons(timerProvider, state),
 
-                    // 컨트롤 버튼
-                    _buildControlButtons(timerProvider, state),
-
-                    const SizedBox(height: 30),
-                  ],
-                ),
+                        SizedBox(height: bottomPadding),
+                      ],
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -349,7 +421,7 @@ class _TimerScreenState extends State<TimerScreen>
     );
   }
 
-  /// 전체화면 비디오 오버레이 UI
+  /// 전체화면 비디오 오버레이 UI - 해상도 반응형
   Widget _buildFullScreenVideoOverlay(
     TimerProvider timerProvider,
     IntervalType intervalType,
@@ -366,18 +438,63 @@ class _TimerScreenState extends State<TimerScreen>
               ? timerProvider.nextExerciseName
               : timerProvider.currentExerciseName);
 
+    // 화면 크기 기반 반응형 계산
+    final screenSize = MediaQuery.of(context).size;
+    final screenHeight = screenSize.height;
+    final screenWidth = screenSize.width;
+    final isLandscape = screenWidth > screenHeight;
+    final shortestSide = screenSize.shortestSide;
+
+    // 기준 크기 계산 (화면의 가로/세로 중 작은 값 기준)
+    final baseUnit = shortestSide / 100;
+
+    // 반응형 크기 계산
+    final timerSize = isLandscape
+        ? (screenHeight * 0.28).clamp(100.0, 180.0)
+        : (screenHeight * 0.18).clamp(100.0, 200.0);
+    final progressSize = timerSize * 0.88;
+    final timerFontSize = timerSize * 0.38;
+    final strokeWidth = (timerSize * 0.03).clamp(2.0, 6.0);
+
+    // 뱃지 및 텍스트 크기
+    final badgePaddingH = (baseUnit * 4).clamp(12.0, 24.0);
+    final badgePaddingV = (baseUnit * 2).clamp(6.0, 12.0);
+    final badgeIconSize = (baseUnit * 4).clamp(14.0, 24.0);
+    final badgeFontSize = (baseUnit * 3.2).clamp(12.0, 18.0);
+    final subtextFontSize = (baseUnit * 2.2).clamp(9.0, 13.0);
+
+    // 간격
+    final spacingSmall = (baseUnit * 1).clamp(4.0, 8.0);
+    final spacingMedium = (baseUnit * 2.5).clamp(8.0, 20.0);
+    final spacingLarge = (baseUnit * 3).clamp(12.0, 24.0);
+
+    // 운동 이름 영역
+    final exerciseIconSize = (baseUnit * 3.5).clamp(14.0, 22.0);
+    final exerciseFontSize = (baseUnit * 3).clamp(12.0, 18.0);
+    final exercisePaddingH = (baseUnit * 3).clamp(10.0, 20.0);
+    final exercisePaddingV = (baseUnit * 1.5).clamp(5.0, 12.0);
+
+    // 세트 표시
+    final setIndicatorWidth = (baseUnit * 4).clamp(12.0, 28.0);
+    final setIndicatorHeight = (baseUnit * 1).clamp(4.0, 8.0);
+    final setFontSize = (baseUnit * 2.8).clamp(10.0, 16.0);
+
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         // 상단: 인터벌 타입 뱃지
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+          padding: EdgeInsets.symmetric(
+            horizontal: badgePaddingH,
+            vertical: badgePaddingV,
+          ),
           decoration: BoxDecoration(
             color: intervalColor.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(40),
+            borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
                 color: intervalColor.withOpacity(0.5),
-                blurRadius: 25,
+                blurRadius: 20,
                 spreadRadius: 2,
               ),
             ],
@@ -388,13 +505,13 @@ class _TimerScreenState extends State<TimerScreen>
               Icon(
                 _getIntervalIcon(intervalType),
                 color: Colors.white,
-                size: 24,
+                size: badgeIconSize,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: spacingSmall),
               Text(
                 _getIntervalText(intervalType),
-                style: const TextStyle(
-                  fontSize: 20,
+                style: TextStyle(
+                  fontSize: badgeFontSize,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
                   letterSpacing: 2,
@@ -403,21 +520,21 @@ class _TimerScreenState extends State<TimerScreen>
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: spacingSmall),
 
         // 서브텍스트
         Text(
           _getIntervalSubtext(intervalType),
           style: TextStyle(
-            fontSize: 13,
+            fontSize: subtextFontSize,
             fontWeight: FontWeight.w600,
             color: Colors.white.withOpacity(0.7),
-            letterSpacing: 4,
+            letterSpacing: 3,
           ),
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: spacingLarge),
 
-        // 중앙: 대형 카운트다운
+        // 중앙: 카운트다운
         AnimatedBuilder(
           animation: _pulseAnimation,
           builder: (context, child) {
@@ -428,17 +545,17 @@ class _TimerScreenState extends State<TimerScreen>
             return Transform.scale(
               scale: scale,
               child: Container(
-                width: 200,
-                height: 200,
+                width: timerSize,
+                height: timerSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.black.withOpacity(0.5),
-                  border: Border.all(color: intervalColor, width: 4),
+                  border: Border.all(color: intervalColor, width: strokeWidth),
                   boxShadow: [
                     BoxShadow(
                       color: intervalColor.withOpacity(0.4),
-                      blurRadius: 40,
-                      spreadRadius: 5,
+                      blurRadius: 25,
+                      spreadRadius: 3,
                     ),
                   ],
                 ),
@@ -447,11 +564,11 @@ class _TimerScreenState extends State<TimerScreen>
                   children: [
                     // 원형 프로그레스
                     SizedBox(
-                      width: 180,
-                      height: 180,
+                      width: progressSize,
+                      height: progressSize,
                       child: CircularProgressIndicator(
                         value: progress,
-                        strokeWidth: 6,
+                        strokeWidth: strokeWidth,
                         backgroundColor: Colors.white.withOpacity(0.1),
                         valueColor: AlwaysStoppedAnimation<Color>(
                           intervalColor,
@@ -462,13 +579,13 @@ class _TimerScreenState extends State<TimerScreen>
                     Text(
                       '$currentTime',
                       style: TextStyle(
-                        fontSize: 72,
+                        fontSize: timerFontSize,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
                         shadows: [
                           Shadow(
                             color: intervalColor.withOpacity(0.8),
-                            blurRadius: 30,
+                            blurRadius: 20,
                           ),
                         ],
                       ),
@@ -479,36 +596,46 @@ class _TimerScreenState extends State<TimerScreen>
             );
           },
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: spacingMedium),
 
         // 운동 이름
         if (exerciseName != null)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: EdgeInsets.symmetric(
+              horizontal: exercisePaddingH,
+              vertical: exercisePaddingV,
+            ),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.fitness_center, color: intervalColor, size: 22),
-                const SizedBox(width: 10),
-                Text(
-                  intervalType == IntervalType.rest
-                      ? '다음: $exerciseName'
-                      : exerciseName,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                Icon(
+                  Icons.fitness_center,
+                  color: intervalColor,
+                  size: exerciseIconSize,
+                ),
+                SizedBox(width: spacingSmall),
+                Flexible(
+                  child: Text(
+                    intervalType == IntervalType.rest
+                        ? '다음: $exerciseName'
+                        : exerciseName,
+                    style: TextStyle(
+                      fontSize: exerciseFontSize,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
           ),
-        const SizedBox(height: 20),
+        SizedBox(height: spacingMedium),
 
         // 세트 표시
         if (currentSet > 0)
@@ -519,11 +646,13 @@ class _TimerScreenState extends State<TimerScreen>
                 final isCompleted = index < currentSet;
                 final isCurrent = index == currentSet - 1;
                 return Container(
-                  width: isCurrent ? 28 : 20,
-                  height: 6,
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: isCurrent
+                      ? setIndicatorWidth * 1.3
+                      : setIndicatorWidth,
+                  height: setIndicatorHeight,
+                  margin: EdgeInsets.symmetric(horizontal: spacingSmall * 0.5),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: BorderRadius.circular(setIndicatorHeight / 2),
                     color: isCompleted
                         ? intervalColor
                         : Colors.white.withOpacity(0.2),
@@ -531,7 +660,7 @@ class _TimerScreenState extends State<TimerScreen>
                         ? [
                             BoxShadow(
                               color: intervalColor.withOpacity(0.6),
-                              blurRadius: 8,
+                              blurRadius: 6,
                             ),
                           ]
                         : null,
@@ -540,11 +669,11 @@ class _TimerScreenState extends State<TimerScreen>
               }),
             ],
           ),
-        const SizedBox(height: 8),
+        SizedBox(height: spacingSmall),
         Text(
           'SET $currentSet / $totalSets',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: setFontSize,
             fontWeight: FontWeight.w600,
             color: Colors.white.withOpacity(0.7),
             letterSpacing: 2,
@@ -555,46 +684,67 @@ class _TimerScreenState extends State<TimerScreen>
   }
 
   Widget _buildTopBar(TimerProvider timerProvider) {
+    // 반응형 크기 계산
+    final screenSize = MediaQuery.of(context).size;
+    final shortestSide = screenSize.shortestSide;
+    final baseUnit = shortestSide / 100;
+
+    final horizontalPadding = (baseUnit * 3).clamp(12.0, 24.0);
+    final verticalPadding = (baseUnit * 2.5).clamp(8.0, 16.0);
+    final closeButtonPadding = (baseUnit * 2.5).clamp(8.0, 14.0);
+    final closeIconSize = (baseUnit * 4.5).clamp(18.0, 26.0);
+    final timeIconSize = (baseUnit * 3.5).clamp(14.0, 22.0);
+    final timeFontSize = (baseUnit * 2.8).clamp(11.0, 16.0);
+    final timePaddingH = (baseUnit * 3).clamp(10.0, 20.0);
+    final timePaddingV = (baseUnit * 2).clamp(6.0, 12.0);
+    final spacerWidth = closeButtonPadding * 2 + closeIconSize;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: verticalPadding,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(closeButtonPadding),
               decoration: BoxDecoration(
                 color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(closeButtonPadding),
                 border: Border.all(color: AppColors.glassBorder),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.close,
                 color: AppColors.textSecondary,
-                size: 22,
+                size: closeIconSize,
               ),
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: EdgeInsets.symmetric(
+              horizontal: timePaddingH,
+              vertical: timePaddingV,
+            ),
             decoration: BoxDecoration(
               color: AppColors.cardDark,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(timePaddingV * 2),
               border: Border.all(color: AppColors.glassBorder),
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.schedule,
                   color: AppColors.textMuted,
-                  size: 18,
+                  size: timeIconSize,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: baseUnit * 1.5),
                 Text(
                   _formatTime(timerProvider.totalTime),
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: timeFontSize,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textSecondary,
                     letterSpacing: 1,
@@ -603,17 +753,32 @@ class _TimerScreenState extends State<TimerScreen>
               ],
             ),
           ),
-          const SizedBox(width: 46),
+          SizedBox(width: spacerWidth),
         ],
       ),
     );
   }
 
   Widget _buildIntervalBadge(IntervalType type, Color color) {
+    // 반응형 크기 계산
+    final screenSize = MediaQuery.of(context).size;
+    final shortestSide = screenSize.shortestSide;
+    final baseUnit = shortestSide / 100;
+
+    final paddingH = (baseUnit * 5).clamp(16.0, 30.0);
+    final paddingV = (baseUnit * 2.8).clamp(10.0, 18.0);
+    final iconSize = (baseUnit * 5).clamp(20.0, 32.0);
+    final fontSize = (baseUnit * 4.5).clamp(16.0, 26.0);
+    final subtextFontSize = (baseUnit * 2.5).clamp(10.0, 14.0);
+    final spacing = (baseUnit * 2.5).clamp(8.0, 16.0);
+
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          padding: EdgeInsets.symmetric(
+            horizontal: paddingH,
+            vertical: paddingV,
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [color.withOpacity(0.3), color.withOpacity(0.1)],
@@ -631,12 +796,12 @@ class _TimerScreenState extends State<TimerScreen>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(_getIntervalIcon(type), color: color, size: 26),
-              const SizedBox(width: 12),
+              Icon(_getIntervalIcon(type), color: color, size: iconSize),
+              SizedBox(width: spacing),
               Text(
                 _getIntervalText(type),
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: fontSize,
                   fontWeight: FontWeight.w700,
                   color: color,
                   letterSpacing: 1,
@@ -645,11 +810,11 @@ class _TimerScreenState extends State<TimerScreen>
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: spacing * 0.5),
         Text(
           _getIntervalSubtext(type),
           style: TextStyle(
-            fontSize: 12,
+            fontSize: subtextFontSize,
             fontWeight: FontWeight.w600,
             color: AppColors.textMuted,
             letterSpacing: 3,
@@ -665,6 +830,20 @@ class _TimerScreenState extends State<TimerScreen>
     Color color,
     TimerState state,
   ) {
+    // 반응형 크기 계산
+    final screenSize = MediaQuery.of(context).size;
+    final shortestSide = screenSize.shortestSide;
+    final isLandscape = screenSize.width > screenSize.height;
+
+    // 타이머 크기 계산 (화면 크기에 비례)
+    final timerSize = isLandscape
+        ? (screenSize.height * 0.45).clamp(200.0, 350.0)
+        : (shortestSide * 0.7).clamp(200.0, 350.0);
+    final ringSize = timerSize * 0.93;
+    final innerSize = timerSize * 0.77;
+    final strokeWidth = (timerSize * 0.047).clamp(8.0, 16.0);
+    final fontSize = (timerSize * 0.21).clamp(40.0, 72.0);
+
     return AnimatedBuilder(
       animation: _pulseAnimation,
       builder: (context, child) {
@@ -672,8 +851,8 @@ class _TimerScreenState extends State<TimerScreen>
         return Transform.scale(
           scale: scale,
           child: SizedBox(
-            width: 300,
-            height: 300,
+            width: timerSize,
+            height: timerSize,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -682,8 +861,8 @@ class _TimerScreenState extends State<TimerScreen>
                   animation: _glowAnimation,
                   builder: (context, child) {
                     return Container(
-                      width: 300,
-                      height: 300,
+                      width: timerSize,
+                      height: timerSize,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
@@ -700,29 +879,29 @@ class _TimerScreenState extends State<TimerScreen>
 
                 // 배경 링
                 CustomPaint(
-                  size: const Size(280, 280),
+                  size: Size(ringSize, ringSize),
                   painter: _TimerRingPainter(
                     progress: 1,
                     color: AppColors.surfaceDark,
-                    strokeWidth: 14,
+                    strokeWidth: strokeWidth,
                   ),
                 ),
 
                 // 진행 링
                 CustomPaint(
-                  size: const Size(280, 280),
+                  size: Size(ringSize, ringSize),
                   painter: _TimerRingPainter(
                     progress: progress,
                     color: color,
-                    strokeWidth: 14,
+                    strokeWidth: strokeWidth,
                     hasShadow: true,
                   ),
                 ),
 
                 // 내부 원
                 Container(
-                  width: 230,
-                  height: 230,
+                  width: innerSize,
+                  height: innerSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
@@ -737,7 +916,7 @@ class _TimerScreenState extends State<TimerScreen>
                       Text(
                         _formatTime(currentTime),
                         style: TextStyle(
-                          fontSize: 64,
+                          fontSize: fontSize,
                           fontWeight: FontWeight.w700,
                           color: color,
                           letterSpacing: -2,
@@ -762,29 +941,41 @@ class _TimerScreenState extends State<TimerScreen>
   }
 
   Widget _buildSetIndicator(int currentSet, int totalSets, Color color) {
+    // 반응형 크기 계산
+    final screenSize = MediaQuery.of(context).size;
+    final shortestSide = screenSize.shortestSide;
+    final baseUnit = shortestSide / 100;
+
+    final labelFontSize = (baseUnit * 2.5).clamp(10.0, 14.0);
+    final indicatorWidth = (baseUnit * 5).clamp(18.0, 36.0);
+    final indicatorHeight = (baseUnit * 1.6).clamp(6.0, 10.0);
+    final indicatorMargin = (baseUnit * 0.6).clamp(2.0, 4.0);
+    final countFontSize = (baseUnit * 3.5).clamp(14.0, 22.0);
+    final spacing = (baseUnit * 2).clamp(6.0, 14.0);
+
     return Column(
       children: [
         Text(
           'SET',
           style: TextStyle(
-            fontSize: 12,
+            fontSize: labelFontSize,
             fontWeight: FontWeight.w600,
             color: AppColors.textMuted,
             letterSpacing: 3,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: spacing),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(totalSets, (index) {
             final isCompleted = index < currentSet;
             final isCurrent = index == currentSet - 1;
             return Container(
-              width: isCurrent ? 32 : 24,
-              height: 8,
-              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: isCurrent ? indicatorWidth * 1.3 : indicatorWidth,
+              height: indicatorHeight,
+              margin: EdgeInsets.symmetric(horizontal: indicatorMargin),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(indicatorHeight / 2),
                 color: isCompleted ? color : AppColors.surfaceDark,
                 boxShadow: isCurrent
                     ? [BoxShadow(color: color.withOpacity(0.5), blurRadius: 8)]
@@ -793,11 +984,11 @@ class _TimerScreenState extends State<TimerScreen>
             );
           }),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: spacing * 1.5),
         Text(
           '$currentSet / $totalSets',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: countFontSize,
             fontWeight: FontWeight.w600,
             color: AppColors.textSecondary,
           ),
@@ -810,9 +1001,23 @@ class _TimerScreenState extends State<TimerScreen>
     BuildContext context,
     TimerProvider timerProvider,
   ) {
+    // 반응형 크기 계산
+    final screenSize = MediaQuery.of(context).size;
+    final shortestSide = screenSize.shortestSide;
+    final baseUnit = shortestSide / 100;
+
+    final marginH = (baseUnit * 6).clamp(20.0, 40.0);
+    final marginV = (baseUnit * 4).clamp(12.0, 24.0);
+    final padding = (baseUnit * 5).clamp(16.0, 28.0);
+    final iconContainerPadding = (baseUnit * 3).clamp(12.0, 20.0);
+    final iconSize = (baseUnit * 8).clamp(28.0, 48.0);
+    final titleFontSize = (baseUnit * 5).clamp(20.0, 30.0);
+    final subtitleFontSize = (baseUnit * 3).clamp(12.0, 18.0);
+    final spacing = (baseUnit * 3).clamp(10.0, 20.0);
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-      padding: const EdgeInsets.all(24),
+      margin: EdgeInsets.symmetric(horizontal: marginH, vertical: marginV),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -820,7 +1025,7 @@ class _TimerScreenState extends State<TimerScreen>
             AppColors.accentGreen.withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(padding),
         border: Border.all(color: AppColors.accentGreen.withOpacity(0.3)),
         boxShadow: [
           BoxShadow(
@@ -832,30 +1037,33 @@ class _TimerScreenState extends State<TimerScreen>
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(iconContainerPadding),
             decoration: BoxDecoration(
               color: AppColors.accentGreen.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.emoji_events_rounded,
               color: AppColors.accentGreen,
-              size: 40,
+              size: iconSize,
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: spacing),
+          Text(
             '운동 완료!',
             style: TextStyle(
-              fontSize: 26,
+              fontSize: titleFontSize,
               fontWeight: FontWeight.w800,
               color: AppColors.accentGreen,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: spacing * 0.5),
           Text(
             '오늘도 멋지게 해냈어요 💪',
-            style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: subtitleFontSize,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),
@@ -863,11 +1071,23 @@ class _TimerScreenState extends State<TimerScreen>
   }
 
   Widget _buildControlButtons(TimerProvider timerProvider, TimerState state) {
+    // 반응형 크기 계산
+    final screenSize = MediaQuery.of(context).size;
+    final shortestSide = screenSize.shortestSide;
+    final baseUnit = shortestSide / 100;
+
+    final horizontalPadding = (baseUnit * 6).clamp(16.0, 40.0);
+    final buttonHeight = (baseUnit * 12).clamp(48.0, 72.0);
+    final stopButtonSize = (baseUnit * 12).clamp(48.0, 72.0);
+    final iconSize = (buttonHeight * 0.45).clamp(20.0, 34.0);
+    final fontSize = (baseUnit * 3.5).clamp(14.0, 20.0);
+    final spacing = (baseUnit * 3).clamp(10.0, 20.0);
+
     if (state == TimerState.initial ||
         state == TimerState.ready ||
         state == TimerState.finished) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
         child: _buildGradientButton(
           onPressed: () {
             HapticFeedback.mediumImpact();
@@ -877,12 +1097,15 @@ class _TimerScreenState extends State<TimerScreen>
           label: state == TimerState.finished ? '다시 시작' : '시작하기',
           gradient: AppGradients.greenGradient,
           glowColor: AppColors.accentGreen,
+          height: buttonHeight,
+          iconSize: iconSize,
+          fontSize: fontSize,
         ),
       );
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Row(
         children: [
           // 메인 버튼 (일시정지/재개)
@@ -902,6 +1125,9 @@ class _TimerScreenState extends State<TimerScreen>
                       ],
                     ),
                     glowColor: AppColors.accentOrange,
+                    height: buttonHeight,
+                    iconSize: iconSize,
+                    fontSize: fontSize,
                   )
                 : _buildGradientButton(
                     onPressed: () {
@@ -912,9 +1138,12 @@ class _TimerScreenState extends State<TimerScreen>
                     label: '계속하기',
                     gradient: AppGradients.greenGradient,
                     glowColor: AppColors.accentGreen,
+                    height: buttonHeight,
+                    iconSize: iconSize,
+                    fontSize: fontSize,
                   ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: spacing),
           // 정지 버튼
           GestureDetector(
             onTap: () {
@@ -922,19 +1151,19 @@ class _TimerScreenState extends State<TimerScreen>
               timerProvider.resetTimer();
             },
             child: Container(
-              width: 64,
-              height: 64,
+              width: stopButtonSize,
+              height: stopButtonSize,
               decoration: BoxDecoration(
                 color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(stopButtonSize * 0.3),
                 border: Border.all(
                   color: AppColors.advancedRed.withOpacity(0.3),
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.stop_rounded,
                 color: AppColors.advancedRed,
-                size: 30,
+                size: iconSize,
               ),
             ),
           ),
@@ -949,14 +1178,17 @@ class _TimerScreenState extends State<TimerScreen>
     required String label,
     required LinearGradient gradient,
     required Color glowColor,
+    required double height,
+    required double iconSize,
+    required double fontSize,
   }) {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        height: 64,
+        height: height,
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(height * 0.3),
           boxShadow: [
             BoxShadow(
               color: glowColor.withOpacity(0.4),
@@ -968,12 +1200,12 @@ class _TimerScreenState extends State<TimerScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 30),
-            const SizedBox(width: 10),
+            Icon(icon, color: Colors.white, size: iconSize),
+            SizedBox(width: iconSize * 0.35),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 18,
+              style: TextStyle(
+                fontSize: fontSize,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 letterSpacing: 0.5,

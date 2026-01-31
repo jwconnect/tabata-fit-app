@@ -724,12 +724,17 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
       sets = 10;
     }
 
+    // 운동 프로그램의 운동 목록 가져오기
+    final exercises = widget.workout.instructions;
+
     timerProvider.setTimerSettings(
       workTime: workTime,
       restTime: restTime,
       sets: sets,
       prepareTime: 10,
       cooldownTime: 30,
+      firstExerciseName: exercises.isNotEmpty ? exercises.first : null,
+      exercises: exercises,
     );
 
     Navigator.push(

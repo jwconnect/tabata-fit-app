@@ -117,11 +117,11 @@ class TimerProvider with ChangeNotifier {
 
     _state = TimerState.running;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _currentTime--;
-      _totalTime--;
-
-      if (_currentTime < 0) {
+      if (_currentTime <= 0) {
         _moveToNextInterval();
+      } else {
+        _currentTime--;
+        _totalTime--;
       }
 
       notifyListeners();
