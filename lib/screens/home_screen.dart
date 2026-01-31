@@ -1,9 +1,23 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/timer_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../utils/app_theme.dart';
 import 'timer_screen.dart';
+
+// 프로그램 배경 이미지 목록
+const List<String> _programImages = [
+  'assets/images/programs/img_program_beginner.png',
+  'assets/images/programs/img_program_cardio.png',
+  'assets/images/programs/img_program_classic.png',
+  'assets/images/programs/img_program_core.png',
+  'assets/images/programs/img_program_extreme.png',
+  'assets/images/programs/img_program_hiit.png',
+  'assets/images/programs/img_program_intermediate.png',
+  'assets/images/programs/img_program_lower_body.png',
+  'assets/images/programs/img_program_upper_body.png',
+];
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,10 +31,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late String _backgroundImage;
 
   @override
   void initState() {
     super.initState();
+    // 랜덤 배경 이미지 선택
+    _backgroundImage = _programImages[Random().nextInt(_programImages.length)];
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -132,107 +150,137 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           end: Alignment.bottomCenter,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          // 로고 및 알림
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 로고 및 알림
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: AppGradients.primaryGradient,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: AppShadows.glow,
+                        ),
+                        child: const Icon(
+                          Icons.bolt,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'TABATA FIT',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
+                  ),
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      gradient: AppGradients.primaryGradient,
+                      color: AppColors.cardDark,
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: AppShadows.glow,
+                      border: Border.all(color: AppColors.glassBorder),
                     ),
                     child: const Icon(
-                      Icons.bolt,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'TABATA FIT',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                      letterSpacing: 2,
+                      Icons.notifications_none,
+                      color: AppColors.textSecondary,
+                      size: 22,
                     ),
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.cardDark,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.glassBorder),
-                ),
-                child: const Icon(
-                  Icons.notifications_none,
+              const SizedBox(height: 30),
+
+              // 환영 메시지
+              Text(
+                _getGreeting(),
+                style: AppTextStyles.body1.copyWith(
                   color: AppColors.textSecondary,
-                  size: 22,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                '오늘도 힘차게 시작해볼까요?',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // 스트릭 배지
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.accentOrange.withOpacity(0.2),
+                      AppColors.primaryRed.withOpacity(0.2),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: AppColors.accentOrange.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.local_fire_department,
+                      color: AppColors.accentOrange,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${statsProvider.currentStreak}일 연속 운동',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.accentOrange,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 30),
-
-          // 환영 메시지
-          Text(
-            _getGreeting(),
-            style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            '오늘도 힘차게 시작해볼까요?',
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // 스트릭 배지
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.accentOrange.withOpacity(0.2),
-                  AppColors.primaryRed.withOpacity(0.2),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: AppColors.accentOrange.withOpacity(0.3),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.local_fire_department,
-                  color: AppColors.accentOrange,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '${statsProvider.currentStreak}일 연속 운동',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.accentOrange,
+          // 배경 프로그램 이미지
+          Positioned(
+            right: -20,
+            top: 30,
+            child: Opacity(
+              opacity: 0.35,
+              child: Transform.rotate(
+                angle: 0.12,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    _backgroundImage,
+                    width: 180,
+                    height: 100,
+                    fit: BoxFit.cover,
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -319,16 +367,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
             const SizedBox(height: 20),
-            const Text(
-              '클래식 타바타',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-                letterSpacing: -0.5,
-              ),
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    'assets/images/programs/img_program_classic.png',
+                    width: 90,
+                    height: 90,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '클래식 타바타',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          _buildQuickStartInfo(Icons.timer_outlined, '4분'),
+                          const SizedBox(width: 16),
+                          _buildQuickStartInfo(
+                            Icons.local_fire_department,
+                            '~60kcal',
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Text(
               '20초 운동 · 10초 휴식 · 8세트',
               style: TextStyle(
@@ -336,14 +416,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 color: Colors.white.withOpacity(0.8),
                 fontWeight: FontWeight.w500,
               ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                _buildQuickStartInfo(Icons.timer_outlined, '4분'),
-                const SizedBox(width: 16),
-                _buildQuickStartInfo(Icons.local_fire_department, '~60kcal'),
-              ],
             ),
           ],
         ),
@@ -656,12 +728,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _startQuickWorkout(BuildContext context) {
+    // 클래식 타바타 운동 목록
+    const classicExercises = [
+      '스쿼트',
+      '푸시업',
+      '점핑잭',
+      '플랭크',
+      '런지',
+      '마운틴 클라이머',
+      '버피',
+      '크런치',
+    ];
+
     Provider.of<TimerProvider>(context, listen: false).setTimerSettings(
       workTime: 20,
       restTime: 10,
       sets: 8,
       prepareTime: 10,
       cooldownTime: 30,
+      firstExerciseName: classicExercises.first,
+      exercises: classicExercises,
     );
     Navigator.push(
       context,

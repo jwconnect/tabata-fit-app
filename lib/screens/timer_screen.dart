@@ -2,8 +2,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 import '../providers/timer_provider.dart';
-import '../providers/statistics_provider.dart';
+
+import '../models/exercise.dart';
 import '../utils/app_theme.dart';
 
 class TimerScreen extends StatefulWidget {
@@ -19,6 +21,10 @@ class _TimerScreenState extends State<TimerScreen>
   late AnimationController _glowController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _glowAnimation;
+
+  VideoPlayerController? _videoController;
+  bool _isVideoInitialized = false;
+  String? _currentVideoPath;
 
   @override
   void initState() {
@@ -43,10 +49,44 @@ class _TimerScreenState extends State<TimerScreen>
     );
   }
 
+  void _initializeVideo(String? exerciseName) {
+    if (exerciseName == null) return;
+
+    final videoPath = ExerciseAssets.getVideoPathByName(exerciseName);
+    if (videoPath.isEmpty) return;
+
+    // 같은 비디오면 재초기화하지 않음
+    if (videoPath == _currentVideoPath && _isVideoInitialized) return;
+
+    _currentVideoPath = videoPath;
+    _videoController?.dispose();
+    _isVideoInitialized = false;
+
+    _videoController = VideoPlayerController.asset(videoPath)
+      ..initialize().then((_) {
+        if (mounted) {
+          setState(() {
+            _isVideoInitialized = true;
+          });
+          _videoController?.setLooping(true);
+          _videoController?.setVolume(0);
+          _videoController?.play();
+        }
+      });
+  }
+
+  void _disposeVideo() {
+    _videoController?.dispose();
+    _videoController = null;
+    _isVideoInitialized = false;
+    _currentVideoPath = null;
+  }
+
   @override
   void dispose() {
     _pulseController.dispose();
     _glowController.dispose();
+    _videoController?.dispose();
     super.dispose();
   }
 
@@ -140,29 +180,116 @@ class _TimerScreenState extends State<TimerScreen>
           }
         }
 
+        // 운동/준비 시간에 비디오 초기화
+        final isWorkOrPrepare =
+            intervalType == IntervalType.prepare ||
+            intervalType == IntervalType.work;
+        if (isWorkOrPrepare && state == TimerState.running) {
+          final exerciseName = intervalType == IntervalType.prepare
+              ? timerProvider.firstExerciseName
+              : timerProvider.currentExerciseName;
+          _initializeVideo(exerciseName);
+        } else if (intervalType == IntervalType.rest) {
+          // 휴식 시간에는 다음 운동 비디오 미리 로드
+          _initializeVideo(
+            timerProvider.nextExerciseName ?? timerProvider.currentExerciseName,
+          );
+        } else if (intervalType == IntervalType.cooldown ||
+            state == TimerState.finished) {
+          if (_videoController != null) {
+            _disposeVideo();
+          }
+        }
+
+        // 운동/준비 시간에는 전체화면 비디오 UI
+        final showFullScreenVideo =
+            (intervalType == IntervalType.prepare ||
+                intervalType == IntervalType.work ||
+                intervalType == IntervalType.rest) &&
+            state != TimerState.finished;
+
         return Scaffold(
           backgroundColor: AppColors.deepBlack,
           body: Stack(
             children: [
-              // 배경 그라데이션 효과
-              AnimatedBuilder(
-                animation: _glowAnimation,
-                builder: (context, child) {
-                  return Container(
+              // 전체 화면 비디오 배경
+              if (showFullScreenVideo &&
+                  _isVideoInitialized &&
+                  _videoController != null)
+                Positioned.fill(
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _videoController!.value.size.width,
+                      height: _videoController!.value.size.height,
+                      child: VideoPlayer(_videoController!),
+                    ),
+                  ),
+                )
+              else if (showFullScreenVideo)
+                // 비디오 로딩 중 배경
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _glowAnimation,
+                    builder: (context, child) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: Alignment.center,
+                            radius: 1.5,
+                            colors: [
+                              intervalColor.withOpacity(0.3),
+                              AppColors.deepBlack,
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+              else
+                // 기본 배경 (완료/정리 시간)
+                AnimatedBuilder(
+                  animation: _glowAnimation,
+                  builder: (context, child) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: Alignment.center,
+                          radius: 1.2,
+                          colors: [
+                            intervalColor.withOpacity(
+                              _glowAnimation.value * 0.3,
+                            ),
+                            AppColors.deepBlack,
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+              // 비디오 위 오버레이 (어둡게)
+              if (showFullScreenVideo)
+                Positioned.fill(
+                  child: Container(
                     decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: Alignment.center,
-                        radius: 1.2,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                         colors: [
-                          intervalColor.withOpacity(_glowAnimation.value * 0.3),
-                          AppColors.deepBlack,
+                          Colors.black.withOpacity(0.4),
+                          Colors.black.withOpacity(0.1),
+                          Colors.black.withOpacity(0.1),
+                          Colors.black.withOpacity(0.6),
                         ],
+                        stops: const [0.0, 0.2, 0.7, 1.0],
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
 
+              // 메인 UI
               SafeArea(
                 child: Column(
                   children: [
@@ -171,22 +298,36 @@ class _TimerScreenState extends State<TimerScreen>
 
                     const Spacer(flex: 1),
 
-                    // 인터벌 상태 배지
-                    _buildIntervalBadge(intervalType, intervalColor),
-                    const SizedBox(height: 50),
-
-                    // 메인 타이머
-                    _buildMainTimer(
-                      currentTime,
-                      progress,
-                      intervalColor,
-                      state,
-                    ),
-                    const SizedBox(height: 40),
-
-                    // 세트 인디케이터
-                    if (currentSet > 0)
-                      _buildSetIndicator(currentSet, totalSets, intervalColor),
+                    // 전체화면 비디오 모드 UI (운동/준비/휴식)
+                    if (showFullScreenVideo)
+                      _buildFullScreenVideoOverlay(
+                        timerProvider,
+                        intervalType,
+                        intervalColor,
+                        currentTime,
+                        progress,
+                        currentSet,
+                        totalSets,
+                        state,
+                      )
+                    else ...[
+                      // 기존 UI (정리운동/완료)
+                      _buildIntervalBadge(intervalType, intervalColor),
+                      const SizedBox(height: 50),
+                      _buildMainTimer(
+                        currentTime,
+                        progress,
+                        intervalColor,
+                        state,
+                      ),
+                      const SizedBox(height: 40),
+                      if (currentSet > 0)
+                        _buildSetIndicator(
+                          currentSet,
+                          totalSets,
+                          intervalColor,
+                        ),
+                    ],
 
                     const Spacer(flex: 1),
 
@@ -205,6 +346,211 @@ class _TimerScreenState extends State<TimerScreen>
           ),
         );
       },
+    );
+  }
+
+  /// 전체화면 비디오 오버레이 UI
+  Widget _buildFullScreenVideoOverlay(
+    TimerProvider timerProvider,
+    IntervalType intervalType,
+    Color intervalColor,
+    int currentTime,
+    double progress,
+    int currentSet,
+    int totalSets,
+    TimerState state,
+  ) {
+    final exerciseName = intervalType == IntervalType.prepare
+        ? timerProvider.firstExerciseName
+        : (intervalType == IntervalType.rest
+              ? timerProvider.nextExerciseName
+              : timerProvider.currentExerciseName);
+
+    return Column(
+      children: [
+        // 상단: 인터벌 타입 뱃지
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+          decoration: BoxDecoration(
+            color: intervalColor.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(40),
+            boxShadow: [
+              BoxShadow(
+                color: intervalColor.withOpacity(0.5),
+                blurRadius: 25,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _getIntervalIcon(intervalType),
+                color: Colors.white,
+                size: 24,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                _getIntervalText(intervalType),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: 2,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // 서브텍스트
+        Text(
+          _getIntervalSubtext(intervalType),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.7),
+            letterSpacing: 4,
+          ),
+        ),
+        const SizedBox(height: 40),
+
+        // 중앙: 대형 카운트다운
+        AnimatedBuilder(
+          animation: _pulseAnimation,
+          builder: (context, child) {
+            final scale =
+                state == TimerState.running && intervalType == IntervalType.work
+                ? _pulseAnimation.value
+                : 1.0;
+            return Transform.scale(
+              scale: scale,
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withOpacity(0.5),
+                  border: Border.all(color: intervalColor, width: 4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: intervalColor.withOpacity(0.4),
+                      blurRadius: 40,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // 원형 프로그레스
+                    SizedBox(
+                      width: 180,
+                      height: 180,
+                      child: CircularProgressIndicator(
+                        value: progress,
+                        strokeWidth: 6,
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          intervalColor,
+                        ),
+                      ),
+                    ),
+                    // 시간 표시
+                    Text(
+                      '$currentTime',
+                      style: TextStyle(
+                        fontSize: 72,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: intervalColor.withOpacity(0.8),
+                            blurRadius: 30,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 30),
+
+        // 운동 이름
+        if (exerciseName != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.fitness_center, color: intervalColor, size: 22),
+                const SizedBox(width: 10),
+                Text(
+                  intervalType == IntervalType.rest
+                      ? '다음: $exerciseName'
+                      : exerciseName,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 20),
+
+        // 세트 표시
+        if (currentSet > 0)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ...List.generate(totalSets, (index) {
+                final isCompleted = index < currentSet;
+                final isCurrent = index == currentSet - 1;
+                return Container(
+                  width: isCurrent ? 28 : 20,
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: isCompleted
+                        ? intervalColor
+                        : Colors.white.withOpacity(0.2),
+                    boxShadow: isCurrent
+                        ? [
+                            BoxShadow(
+                              color: intervalColor.withOpacity(0.6),
+                              blurRadius: 8,
+                            ),
+                          ]
+                        : null,
+                  ),
+                );
+              }),
+            ],
+          ),
+        const SizedBox(height: 8),
+        Text(
+          'SET $currentSet / $totalSets',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.7),
+            letterSpacing: 2,
+          ),
+        ),
+      ],
     );
   }
 

@@ -25,8 +25,29 @@ class TimerProvider with ChangeNotifier {
   int _currentSet = 0;
   int _currentTime = 0;
   int _totalTime = 0;
+  String? _firstExerciseName;
+  List<String> _exercises = [];
+  int _currentExerciseIndex = 0;
 
   TimerState get state => _state;
+  String? get firstExerciseName => _firstExerciseName;
+  List<String> get exercises => _exercises;
+
+  /// 현재 운동 이름 (운동 중일 때)
+  String? get currentExerciseName {
+    if (_exercises.isEmpty) return _firstExerciseName;
+    if (_currentExerciseIndex >= _exercises.length) return _exercises.last;
+    return _exercises[_currentExerciseIndex];
+  }
+
+  /// 다음 운동 이름 (휴식 중일 때 표시)
+  String? get nextExerciseName {
+    if (_exercises.isEmpty) return _firstExerciseName;
+    final nextIndex = _currentExerciseIndex + 1;
+    if (nextIndex >= _exercises.length) return null;
+    return _exercises[nextIndex];
+  }
+
   IntervalType get intervalType => _intervalType;
   int get currentSet => _currentSet;
   int get currentTime => _currentTime;
@@ -68,12 +89,17 @@ class TimerProvider with ChangeNotifier {
     int? sets,
     int? prepareTime,
     int? cooldownTime,
+    String? firstExerciseName,
+    List<String>? exercises,
   }) {
     _workTime = workTime ?? _workTime;
     _restTime = restTime ?? _restTime;
     _sets = sets ?? _sets;
     _prepareTime = prepareTime ?? _prepareTime;
     _cooldownTime = cooldownTime ?? _cooldownTime;
+    _firstExerciseName = firstExerciseName;
+    _exercises = exercises ?? [];
+    _currentExerciseIndex = 0;
     _state = TimerState.ready;
     _currentSet = 0;
     _currentTime = _prepareTime;
@@ -120,6 +146,7 @@ class TimerProvider with ChangeNotifier {
     _state = TimerState.initial;
     _intervalType = IntervalType.prepare;
     _currentSet = 0;
+    _currentExerciseIndex = 0;
     _currentTime = _prepareTime;
     _totalTime = _prepareTime + (_workTime + _restTime) * _sets + _cooldownTime;
     notifyListeners();
@@ -144,6 +171,7 @@ class TimerProvider with ChangeNotifier {
       case IntervalType.rest:
         _intervalType = IntervalType.work;
         _currentSet++;
+        _currentExerciseIndex++;
         _currentTime = _workTime;
         break;
       case IntervalType.cooldown:
