@@ -253,6 +253,11 @@ class ExerciseAssets {
     'crunch': '${_videoBasePath}crunch.mp4',
     'leg_raise': '${_videoBasePath}leg_raise.mp4',
     'russian_twist': '${_videoBasePath}russian_twist.mp4',
+    // 고급자 운동
+    'burpee': '${_videoBasePath}burpee.mp4',
+    'tuck_jump': '${_videoBasePath}tuck_jump.mp4',
+    'jump_lunge': '${_videoBasePath}jump_lunge.mp4',
+    'diamond_pushup': '${_videoBasePath}diamond_pushup.mp4',
   };
 
   /// 운동 이름(한글) → 비디오 경로 매핑
@@ -262,6 +267,8 @@ class ExerciseAssets {
     '스쿼트 (기본)': '${_videoBasePath}squat.mp4',
     '제자리 걷기': '${_videoBasePath}walk.mp4',
     '무릎 올리기': '${_videoBasePath}high_knees.mp4',
+    '하이니': '${_videoBasePath}high_knees.mp4',
+    '하이니 (High Knees)': '${_videoBasePath}high_knees.mp4',
     '벽 푸시업': '${_videoBasePath}wall_pushup.mp4',
     '플랭크': '${_videoBasePath}flank.mp4',
     '플랭크 (기본)': '${_videoBasePath}flank.mp4',
@@ -278,6 +285,11 @@ class ExerciseAssets {
     '크런치': '${_videoBasePath}crunch.mp4',
     '레그레이즈': '${_videoBasePath}leg_raise.mp4',
     '러시안 트위스트': '${_videoBasePath}russian_twist.mp4',
+    // 고급자 운동
+    '버피': '${_videoBasePath}burpee.mp4',
+    '터크 점프': '${_videoBasePath}tuck_jump.mp4',
+    '점프 런지': '${_videoBasePath}jump_lunge.mp4',
+    '다이아몬드 푸시업': '${_videoBasePath}diamond_pushup.mp4',
   };
 
   /// 운동 ID를 비디오 경로로 변환

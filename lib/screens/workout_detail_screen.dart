@@ -821,16 +821,25 @@ class _FullScreenVideoPlayerState extends State<_FullScreenVideoPlayer> {
         child: Stack(
           fit: StackFit.expand,
           children: [
+            // 배경 그라데이션
+            Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 1.2,
+                  colors: [Colors.grey.shade900, Colors.black],
+                ),
+              ),
+            ),
+
             // 비디오 플레이어
             if (_isInitialized)
               Positioned.fill(
                 child: GestureDetector(
                   onTap: _togglePlayPause,
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                      width: _controller.value.size.width,
-                      height: _controller.value.size.height,
+                  child: Center(
+                    child: AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
                       child: VideoPlayer(_controller),
                     ),
                   ),
