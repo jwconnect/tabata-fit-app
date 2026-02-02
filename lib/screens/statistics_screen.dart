@@ -21,7 +21,9 @@ class StatisticsScreen extends StatelessWidget {
                 expandedHeight: 200,
                 floating: false,
                 pinned: true,
-                backgroundColor: isDark ? AppColors.darkGray : AppColors.accentBlue,
+                backgroundColor: isDark
+                    ? AppColors.darkGray
+                    : AppColors.accentBlue,
                 flexibleSpace: FlexibleSpaceBar(
                   title: const Text(
                     '통계',
@@ -86,7 +88,11 @@ class StatisticsScreen extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // 주간 차트
-                    _buildSectionHeader('이번 주 운동', Icons.calendar_today_rounded, isDark),
+                    _buildSectionHeader(
+                      '이번 주 운동',
+                      Icons.calendar_today_rounded,
+                      isDark,
+                    ),
                     const SizedBox(height: 12),
                     _buildWeeklyChart(statsProvider, isDark),
                     const SizedBox(height: 20),
@@ -103,7 +109,13 @@ class StatisticsScreen extends StatelessWidget {
                     else
                       ...statsProvider.sessions.reversed
                           .take(5)
-                          .map((session) => _buildSessionCard(session, statsProvider, isDark)),
+                          .map(
+                            (session) => _buildSessionCard(
+                              session,
+                              statsProvider,
+                              isDark,
+                            ),
+                          ),
 
                     const SizedBox(height: 20),
                   ]),
@@ -125,11 +137,7 @@ class StatisticsScreen extends StatelessWidget {
             color: AppColors.primaryRed.withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(
-            icon,
-            color: AppColors.primaryRed,
-            size: 20,
-          ),
+          child: Icon(icon, color: AppColors.primaryRed, size: 20),
         ),
         const SizedBox(width: 12),
         Text(
@@ -298,80 +306,108 @@ class StatisticsScreen extends StatelessWidget {
       child: Column(
         children: [
           SizedBox(
-            height: 160,
+            height: 180,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: List.generate(7, (index) {
                 final dayIndex = index + 1;
                 final value = weeklyStats[dayIndex] ?? 0;
-                final height = maxValue > 0 ? (value / maxValue) * 120 : 0.0;
+                // 막대 최대 높이를 110으로 제한 (텍스트+여백 공간 확보)
+                final height = maxValue > 0 ? (value / maxValue) * 110 : 0.0;
                 final isToday = dayIndex == today;
 
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (value > 0)
-                      Text(
-                        '${value ~/ 60}분',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isToday
-                              ? AppColors.primaryRed
-                              : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                        ),
-                      ),
-                    const SizedBox(height: 6),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: 32,
-                      height: height > 0 ? height : 6,
-                      decoration: BoxDecoration(
-                        gradient: value > 0
-                            ? LinearGradient(
-                                colors: isToday
-                                    ? [AppColors.primaryRed, AppColors.primaryRedDark]
-                                    : [AppColors.accentBlue, AppColors.accentBlue.withOpacity(0.7)],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
+                return Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // 분 표시 텍스트 (고정 높이로 공간 확보)
+                      SizedBox(
+                        height: 18,
+                        child: value > 0
+                            ? Text(
+                                '${value ~/ 60}분',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isToday
+                                      ? AppColors.primaryRed
+                                      : (isDark
+                                            ? Colors.grey[400]
+                                            : Colors.grey[600]),
+                                ),
                               )
                             : null,
-                        color: value > 0 ? null : (isDark ? Colors.grey[800] : Colors.grey[200]),
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: value > 0
-                            ? [
-                                BoxShadow(
-                                  color: (isToday ? AppColors.primaryRed : AppColors.accentBlue)
-                                      .withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ]
-                            : null,
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isToday
-                            ? AppColors.primaryRed.withOpacity(0.1)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        days[index],
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
-                          color: isToday
-                              ? AppColors.primaryRed
-                              : (isDark ? Colors.grey[500] : Colors.grey[600]),
+                      const SizedBox(height: 4),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: 28,
+                        height: height > 0 ? height : 6,
+                        decoration: BoxDecoration(
+                          gradient: value > 0
+                              ? LinearGradient(
+                                  colors: isToday
+                                      ? [
+                                          AppColors.primaryRed,
+                                          AppColors.primaryRedDark,
+                                        ]
+                                      : [
+                                          AppColors.accentBlue,
+                                          AppColors.accentBlue.withOpacity(0.7),
+                                        ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                )
+                              : null,
+                          color: value > 0
+                              ? null
+                              : (isDark ? Colors.grey[800] : Colors.grey[200]),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: value > 0
+                              ? [
+                                  BoxShadow(
+                                    color:
+                                        (isToday
+                                                ? AppColors.primaryRed
+                                                : AppColors.accentBlue)
+                                            .withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ]
+                              : null,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isToday
+                              ? AppColors.primaryRed.withOpacity(0.1)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          days[index],
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isToday
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: isToday
+                                ? AppColors.primaryRed
+                                : (isDark
+                                      ? Colors.grey[500]
+                                      : Colors.grey[600]),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }),
             ),
@@ -431,7 +467,11 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSessionCard(dynamic session, StatisticsProvider statsProvider, bool isDark) {
+  Widget _buildSessionCard(
+    dynamic session,
+    StatisticsProvider statsProvider,
+    bool isDark,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),

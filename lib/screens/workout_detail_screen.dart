@@ -260,7 +260,12 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
       sets = 10;
     }
 
+    final exerciseCount = widget.workout.instructions.length;
     final totalTime = 10 + (workTime + restTime) * sets + 30;
+
+    // 반복 횟수 계산 (6세트 / 4운동 = 1.5회 → "1회 + 2동작" 또는 "2회 순환")
+    final fullCycles = sets ~/ exerciseCount;
+    final extraSets = sets % exerciseCount;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -270,16 +275,48 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
         borderRadius: BorderRadius.circular(16),
         border: isDark ? Border.all(color: Colors.grey[800]!) : null,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Column(
         children: [
-          _buildInfoItem(Icons.schedule, '${totalTime ~/ 60}분', '총 시간', isDark),
-          _buildDivider(isDark),
-          _buildInfoItem(Icons.repeat, '$sets', '세트', isDark),
-          _buildDivider(isDark),
-          _buildInfoItem(Icons.fitness_center, '${workTime}초', '운동', isDark),
-          _buildDivider(isDark),
-          _buildInfoItem(Icons.pause_circle, '${restTime}초', '휴식', isDark),
+          // 운동 구성 요약 (예: "4개 운동 × 6세트")
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primaryRed.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.primaryRed.withOpacity(0.3)),
+            ),
+            child: Text(
+              extraSets == 0
+                  ? '$exerciseCount개 운동 × $fullCycles회 반복 = $sets세트'
+                  : '$exerciseCount개 운동 × $sets세트 (${fullCycles}회 + $extraSets동작)',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.primaryRed : AppColors.primaryRedDark,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildInfoItem(
+                Icons.schedule,
+                '${totalTime ~/ 60}분',
+                '총 시간',
+                isDark,
+              ),
+              _buildDivider(isDark),
+              _buildInfoItem(
+                Icons.fitness_center,
+                '${workTime}초',
+                '운동',
+                isDark,
+              ),
+              _buildDivider(isDark),
+              _buildInfoItem(Icons.pause_circle, '${restTime}초', '휴식', isDark),
+            ],
+          ),
         ],
       ),
     );
@@ -734,6 +771,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
       prepareTime: 10,
       cooldownTime: 30,
       firstExerciseName: exercises.isNotEmpty ? exercises.first : null,
+      workoutName: widget.workout.name,
       exercises: exercises,
     );
 

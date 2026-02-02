@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../providers/timer_provider.dart';
@@ -28,7 +29,6 @@ class _TimerScreenState extends State<TimerScreen>
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   String? _currentVideoPath;
-  bool _hasRecordedSession = false; // 기록 저장 여부 추적
 
   @override
   void initState() {
@@ -194,7 +194,8 @@ class _TimerScreenState extends State<TimerScreen>
     final statsProvider = context.read<StatisticsProvider>();
 
     // 운동 시간 계산 (준비/정리운동 제외, 운동+휴식 시간만)
-    final workoutDuration = timerProvider.sets *
+    final workoutDuration =
+        timerProvider.sets *
         (TimerProvider.defaultWorkTime + TimerProvider.defaultRestTime);
 
     // 칼로리 계산 (대략 분당 10kcal로 추정)
@@ -204,7 +205,7 @@ class _TimerScreenState extends State<TimerScreen>
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       date: DateTime.now(),
       workoutId: 'tabata_${DateTime.now().millisecondsSinceEpoch}',
-      workoutName: timerProvider.firstExerciseName ?? '타바타 운동',
+      workoutName: timerProvider.workoutName ?? '타바타 운동',
       duration: workoutDuration,
       sets: timerProvider.sets,
       calories: calories,
@@ -259,13 +260,9 @@ class _TimerScreenState extends State<TimerScreen>
         }
 
         // 운동 완료 시 기록 저장 (한 번만)
-        if (state == TimerState.finished && !_hasRecordedSession) {
-          _hasRecordedSession = true;
+        if (state == TimerState.finished && !timerProvider.hasRecordedSession) {
+          timerProvider.markSessionRecorded();
           _saveWorkoutSession(context, timerProvider);
-        }
-        // 타이머가 다시 시작되면 플래그 리셋
-        if (state == TimerState.running && _hasRecordedSession) {
-          _hasRecordedSession = false;
         }
 
         // 운동/준비 시간에는 전체화면 비디오 UI
@@ -396,6 +393,7 @@ class _TimerScreenState extends State<TimerScreen>
                   final baseUnit = shortestSide / 100;
 
                   final bottomPadding = (baseUnit * 5).clamp(16.0, 40.0);
+                  final spacingSmall = (baseUnit * 3).clamp(8.0, 16.0);
                   final spacingLarge = (baseUnit * 8).clamp(30.0, 60.0);
                   final spacingMedium = (baseUnit * 6).clamp(24.0, 50.0);
 
@@ -442,6 +440,117 @@ class _TimerScreenState extends State<TimerScreen>
                                             totalSets,
                                             intervalColor,
                                           ),
+                                        // 정리운동 안내 메시지
+                                        if (intervalType ==
+                                                IntervalType.cooldown &&
+                                            state == TimerState.running &&
+                                            timerProvider
+                                                    .currentDisplayMessage !=
+                                                null)
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                              top: spacingMedium,
+                                            ),
+                                            child: Container(
+                                              margin: EdgeInsets.symmetric(
+                                                horizontal: spacingMedium,
+                                              ),
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: spacingMedium,
+                                                vertical: spacingSmall,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black.withOpacity(
+                                                  0.6,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                                border: Border.all(
+                                                  color: intervalColor
+                                                      .withOpacity(0.5),
+                                                  width: 1.5,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                timerProvider
+                                                    .currentDisplayMessage!,
+                                                style: GoogleFonts.doHyeon(
+                                                  fontSize: (baseUnit * 4.5)
+                                                      .clamp(16.0, 24.0),
+                                                  color: Colors.white,
+                                                  height: 1.3,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                        // 정리운동 건너뛰기 버튼
+                                        if (intervalType ==
+                                                IntervalType.cooldown &&
+                                            state == TimerState.running)
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                              top: spacingLarge,
+                                            ),
+                                            child: GestureDetector(
+                                              onTap: () =>
+                                                  timerProvider.finishWorkout(),
+                                              child: Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: spacingLarge,
+                                                  vertical: spacingSmall,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      AppColors.primaryRed,
+                                                      AppColors.primaryRedDark,
+                                                    ],
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(25),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: AppColors
+                                                          .primaryRed
+                                                          .withOpacity(0.4),
+                                                      blurRadius: 15,
+                                                      offset: const Offset(
+                                                        0,
+                                                        5,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      Icons
+                                                          .check_circle_rounded,
+                                                      color: Colors.white,
+                                                      size: (baseUnit * 5)
+                                                          .clamp(20.0, 28.0),
+                                                    ),
+                                                    SizedBox(
+                                                      width: spacingSmall,
+                                                    ),
+                                                    Text(
+                                                      '운동 완료',
+                                                      style: TextStyle(
+                                                        fontSize: (baseUnit * 4)
+                                                            .clamp(14.0, 20.0),
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                       ],
                                     ),
                             ),
@@ -484,6 +593,9 @@ class _TimerScreenState extends State<TimerScreen>
         : (intervalType == IntervalType.rest
               ? timerProvider.nextExerciseName
               : timerProvider.currentExerciseName);
+
+    // 현재 표시할 동기부여 멘트
+    final displayMessage = timerProvider.currentDisplayMessage;
 
     // 화면 크기 기반 반응형 계산
     final screenSize = MediaQuery.of(context).size;
@@ -579,7 +691,63 @@ class _TimerScreenState extends State<TimerScreen>
             letterSpacing: 3,
           ),
         ),
-        SizedBox(height: spacingLarge),
+        SizedBox(height: spacingMedium),
+
+        // 동기부여 멘트 표시
+        if (displayMessage != null)
+          AnimatedOpacity(
+            opacity: 1.0,
+            duration: const Duration(milliseconds: 300),
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: spacingMedium),
+              padding: EdgeInsets.symmetric(
+                horizontal: badgePaddingH * 1.5,
+                vertical: badgePaddingV * 1.2,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.8),
+                    Colors.black.withOpacity(0.6),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: intervalColor.withOpacity(0.6),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: intervalColor.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Text(
+                displayMessage,
+                style: GoogleFonts.doHyeon(
+                  fontSize: (baseUnit * 5).clamp(18.0, 28.0),
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white,
+                  height: 1.4,
+                  letterSpacing: 1.5,
+                  shadows: [
+                    Shadow(
+                      color: intervalColor.withOpacity(0.8),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        SizedBox(height: spacingMedium),
 
         // 중앙: 카운트다운
         AnimatedBuilder(
@@ -645,7 +813,7 @@ class _TimerScreenState extends State<TimerScreen>
         ),
         SizedBox(height: spacingMedium),
 
-        // 운동 이름
+        // 운동 이름 + 순서 표시
         if (exerciseName != null)
           Container(
             padding: EdgeInsets.symmetric(
@@ -660,6 +828,29 @@ class _TimerScreenState extends State<TimerScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // 운동 순서 번호 뱃지
+                if (timerProvider.exerciseCount > 0)
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: spacingSmall,
+                      vertical: spacingSmall * 0.5,
+                    ),
+                    margin: EdgeInsets.only(right: spacingSmall),
+                    decoration: BoxDecoration(
+                      color: intervalColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      intervalType == IntervalType.rest
+                          ? '${((currentSet) % timerProvider.exerciseCount) + 1}'
+                          : '${((currentSet - 1) % timerProvider.exerciseCount) + 1}',
+                      style: TextStyle(
+                        fontSize: exerciseFontSize * 0.9,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 Icon(
                   Icons.fitness_center,
                   color: intervalColor,

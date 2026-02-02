@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/notification_service.dart';
+import '../services/sound_service.dart';
 
 class SettingsProvider with ChangeNotifier {
   bool _soundEnabled = true;
@@ -55,6 +56,10 @@ class SettingsProvider with ChangeNotifier {
       );
     }
 
+    // SoundService에 사운드/진동 설정 동기화
+    SoundService().setMuted(!_soundEnabled);
+    SoundService().setVibrationEnabled(_vibrationEnabled);
+
     notifyListeners();
   }
 
@@ -62,6 +67,8 @@ class SettingsProvider with ChangeNotifier {
     _soundEnabled = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('soundEnabled', value);
+    // SoundService에 사운드 설정 동기화
+    SoundService().setMuted(!value);
     notifyListeners();
   }
 
@@ -69,6 +76,8 @@ class SettingsProvider with ChangeNotifier {
     _vibrationEnabled = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('vibrationEnabled', value);
+    // SoundService에 진동 설정 동기화
+    SoundService().setVibrationEnabled(value);
     notifyListeners();
   }
 

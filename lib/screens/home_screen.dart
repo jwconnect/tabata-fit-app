@@ -752,6 +752,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       prepareTime: 10,
       cooldownTime: 30,
       firstExerciseName: classicExercises.first,
+      workoutName: '클래식 타바타',
       exercises: classicExercises,
     );
     Navigator.push(
