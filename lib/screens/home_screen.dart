@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/timer_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../utils/app_theme.dart';
+import '../widgets/ad_banner_widget.dart';
 import 'timer_screen.dart';
 
 // 프로그램 배경 이미지 목록
@@ -105,7 +106,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     _buildSectionTitle('이번 주 활동', Icons.calendar_today),
                     const SizedBox(height: 16),
                     _buildWeeklyProgress(statsProvider),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
+
+                    // 광고 배너 (작은 사이즈)
+                    const Center(child: SmallBannerAdWidget()),
+                    const SizedBox(height: 24),
 
                     // 최근 운동
                     _buildSectionTitle('최근 운동', Icons.history),

@@ -81,6 +81,51 @@ class SettingsScreen extends StatelessWidget {
                               settingsProvider.setVibrationEnabled(value),
                           isDark: isDark,
                         ),
+                        _buildDivider(isDark),
+                        _buildSwitchTile(
+                          icon: Icons.alarm_rounded,
+                          iconColor: AppColors.accentGreen,
+                          title: '매일 알림',
+                          subtitle: '운동 시간을 잊지 않도록 알려드려요',
+                          value: settingsProvider.reminderEnabled,
+                          onChanged: (value) =>
+                              settingsProvider.setReminderEnabled(value),
+                          isDark: isDark,
+                        ),
+                        if (settingsProvider.reminderEnabled) ...[
+                          _buildDivider(isDark),
+                          _buildTimeTile(
+                            context: context,
+                            icon: Icons.access_time_rounded,
+                            iconColor: AppColors.accentGreen,
+                            title: '알림 시간',
+                            timeString: settingsProvider.reminderTimeString,
+                            isDark: isDark,
+                            onTap: () => _showTimePicker(context, settingsProvider, isDark),
+                          ),
+                          _buildDivider(isDark),
+                          _buildActionTile(
+                            icon: Icons.send_rounded,
+                            iconColor: AppColors.accentBlue,
+                            title: '테스트 알림 보내기',
+                            isDark: isDark,
+                            onTap: () async {
+                              await settingsProvider.sendTestNotification();
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('테스트 알림을 보냈습니다!'),
+                                    backgroundColor: AppColors.accentGreen,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
                       ],
                     ),
 
@@ -359,6 +404,144 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildTimeTile({
+    required BuildContext context,
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String timeString,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: iconColor, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  timeString,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: iconColor,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: isDark ? Colors.grey[600] : Colors.grey[400],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: iconColor, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: iconColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showTimePicker(
+    BuildContext context,
+    SettingsProvider settingsProvider,
+    bool isDark,
+  ) {
+    showTimePicker(
+      context: context,
+      initialTime: settingsProvider.reminderTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primaryRed,
+              onPrimary: Colors.white,
+              surface: isDark ? AppColors.darkGray : Colors.white,
+              onSurface: isDark ? Colors.white : Colors.black87,
+            ),
+            dialogBackgroundColor: isDark ? AppColors.darkGray : Colors.white,
+          ),
+          child: child!,
+        );
+      },
+    ).then((selectedTime) {
+      if (selectedTime != null) {
+        settingsProvider.setReminderTime(
+          selectedTime.hour,
+          selectedTime.minute,
+        );
+      }
+    });
   }
 
   Widget _buildInfoCard(bool isDark) {

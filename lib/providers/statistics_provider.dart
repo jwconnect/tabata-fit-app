@@ -1,12 +1,46 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/workout_session.dart';
 
 class StatisticsProvider with ChangeNotifier {
+  static const String _storageKey = 'workout_sessions';
   final List<WorkoutSession> _sessions = [];
+  bool _isInitialized = false;
 
   List<WorkoutSession> get sessions => List.unmodifiable(_sessions);
 
   int get totalWorkouts => _sessions.length;
+
+  /// 앱 시작 시 저장된 데이터 로드
+  Future<void> init() async {
+    if (_isInitialized) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_storageKey);
+
+    if (jsonString != null) {
+      try {
+        final List<dynamic> jsonList = json.decode(jsonString);
+        _sessions.clear();
+        _sessions.addAll(
+          jsonList.map((j) => WorkoutSession.fromJson(j)).toList(),
+        );
+        notifyListeners();
+      } catch (e) {
+        debugPrint('운동 기록 로드 실패: $e');
+      }
+    }
+
+    _isInitialized = true;
+  }
+
+  /// 데이터를 SharedPreferences에 저장
+  Future<void> _saveToStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = _sessions.map((s) => s.toJson()).toList();
+    await prefs.setString(_storageKey, json.encode(jsonList));
+  }
 
   int get totalDuration {
     return _sessions.fold(0, (sum, session) => sum + session.duration);
@@ -84,13 +118,15 @@ class StatisticsProvider with ChangeNotifier {
     return stats;
   }
 
-  void addSession(WorkoutSession session) {
+  Future<void> addSession(WorkoutSession session) async {
     _sessions.add(session);
+    await _saveToStorage();
     notifyListeners();
   }
 
-  void removeSession(String sessionId) {
+  Future<void> removeSession(String sessionId) async {
     _sessions.removeWhere((s) => s.id == sessionId);
+    await _saveToStorage();
     notifyListeners();
   }
 

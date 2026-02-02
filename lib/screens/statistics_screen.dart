@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/statistics_provider.dart';
 import '../utils/app_theme.dart';
+import '../widgets/ad_banner_widget.dart';
 
 class StatisticsScreen extends StatelessWidget {
   const StatisticsScreen({super.key});
@@ -88,7 +89,11 @@ class StatisticsScreen extends StatelessWidget {
                     _buildSectionHeader('이번 주 운동', Icons.calendar_today_rounded, isDark),
                     const SizedBox(height: 12),
                     _buildWeeklyChart(statsProvider, isDark),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
+
+                    // 광고 배너
+                    const Center(child: SmallBannerAdWidget()),
+                    const SizedBox(height: 20),
 
                     // 최근 운동 기록
                     _buildSectionHeader('최근 기록', Icons.history_rounded, isDark),

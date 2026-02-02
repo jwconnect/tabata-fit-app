@@ -5,9 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../providers/timer_provider.dart';
-
+import '../providers/statistics_provider.dart';
 import '../models/exercise.dart';
+import '../models/workout_session.dart';
 import '../utils/app_theme.dart';
+import '../widgets/ad_banner_widget.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
@@ -26,6 +28,7 @@ class _TimerScreenState extends State<TimerScreen>
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   String? _currentVideoPath;
+  bool _hasRecordedSession = false; // 기록 저장 여부 추적
 
   @override
   void initState() {
@@ -64,12 +67,15 @@ class _TimerScreenState extends State<TimerScreen>
     _videoController?.dispose();
     _isVideoInitialized = false;
 
+    // 플랭크 계열 운동은 한 번만 재생 (자세 유지 운동)
+    final isStaticExercise = _isStaticHoldExercise(exerciseName);
+
     // 단일 비디오 컨트롤러 사용 (블러 배경과 메인 비디오 공유)
     _videoController = VideoPlayerController.asset(videoPath);
     _videoController!.addListener(_onVideoUpdate);
     _videoController!.initialize().then((_) {
       if (mounted && _videoController != null) {
-        _videoController!.setLooping(true);
+        _videoController!.setLooping(!isStaticExercise); // 정적 운동은 루프 안함
         _videoController!.setVolume(0);
         _videoController!.play();
         setState(() {
@@ -77,6 +83,13 @@ class _TimerScreenState extends State<TimerScreen>
         });
       }
     });
+  }
+
+  /// 정적 자세 유지 운동인지 확인 (플랭크 등)
+  bool _isStaticHoldExercise(String exerciseName) {
+    final staticExercises = ['플랭크', 'plank', '글루트 브릿지', 'glute bridge'];
+    final lowerName = exerciseName.toLowerCase();
+    return staticExercises.any((e) => lowerName.contains(e.toLowerCase()));
   }
 
   void _onVideoUpdate() {
@@ -176,6 +189,30 @@ class _TimerScreenState extends State<TimerScreen>
     }
   }
 
+  /// 운동 기록 저장
+  void _saveWorkoutSession(BuildContext context, TimerProvider timerProvider) {
+    final statsProvider = context.read<StatisticsProvider>();
+
+    // 운동 시간 계산 (준비/정리운동 제외, 운동+휴식 시간만)
+    final workoutDuration = timerProvider.sets *
+        (TimerProvider.defaultWorkTime + TimerProvider.defaultRestTime);
+
+    // 칼로리 계산 (대략 분당 10kcal로 추정)
+    final calories = (workoutDuration / 60) * 10;
+
+    final session = WorkoutSession(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      date: DateTime.now(),
+      workoutId: 'tabata_${DateTime.now().millisecondsSinceEpoch}',
+      workoutName: timerProvider.firstExerciseName ?? '타바타 운동',
+      duration: workoutDuration,
+      sets: timerProvider.sets,
+      calories: calories,
+    );
+
+    statsProvider.addSession(session);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<TimerProvider>(
@@ -219,6 +256,16 @@ class _TimerScreenState extends State<TimerScreen>
           if (_videoController != null) {
             _disposeVideo();
           }
+        }
+
+        // 운동 완료 시 기록 저장 (한 번만)
+        if (state == TimerState.finished && !_hasRecordedSession) {
+          _hasRecordedSession = true;
+          _saveWorkoutSession(context, timerProvider);
+        }
+        // 타이머가 다시 시작되면 플래그 리셋
+        if (state == TimerState.running && _hasRecordedSession) {
+          _hasRecordedSession = false;
         }
 
         // 운동/준비 시간에는 전체화면 비디오 UI
@@ -753,7 +800,27 @@ class _TimerScreenState extends State<TimerScreen>
               ],
             ),
           ),
-          SizedBox(width: spacerWidth),
+          // 사운드/진동 토글 버튼
+          GestureDetector(
+            onTap: () => timerProvider.toggleMute(),
+            child: Container(
+              padding: EdgeInsets.all(closeButtonPadding),
+              decoration: BoxDecoration(
+                color: AppColors.cardDark,
+                borderRadius: BorderRadius.circular(closeButtonPadding),
+                border: Border.all(color: AppColors.glassBorder),
+              ),
+              child: Icon(
+                timerProvider.isMuted
+                    ? Icons.volume_off_rounded
+                    : Icons.volume_up_rounded,
+                color: timerProvider.isMuted
+                    ? AppColors.textMuted
+                    : AppColors.accentGreen,
+                size: closeIconSize,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1065,6 +1132,9 @@ class _TimerScreenState extends State<TimerScreen>
               color: AppColors.textSecondary,
             ),
           ),
+          SizedBox(height: spacing * 1.5),
+          // 완료 화면 광고
+          const LargeBannerAdWidget(showLabel: false),
         ],
       ),
     );
@@ -1086,21 +1156,32 @@ class _TimerScreenState extends State<TimerScreen>
     if (state == TimerState.initial ||
         state == TimerState.ready ||
         state == TimerState.finished) {
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-        child: _buildGradientButton(
-          onPressed: () {
-            HapticFeedback.mediumImpact();
-            timerProvider.startTimer();
-          },
-          icon: Icons.play_arrow_rounded,
-          label: state == TimerState.finished ? '다시 시작' : '시작하기',
-          gradient: AppGradients.greenGradient,
-          glowColor: AppColors.accentGreen,
-          height: buttonHeight,
-          iconSize: iconSize,
-          fontSize: fontSize,
-        ),
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 대기/완료 화면에서 큰 배너 광고 표시
+          if (state != TimerState.finished)
+            Padding(
+              padding: EdgeInsets.only(bottom: spacing * 2),
+              child: const LargeBannerAdWidget(),
+            ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: _buildGradientButton(
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                timerProvider.startTimer();
+              },
+              icon: Icons.play_arrow_rounded,
+              label: state == TimerState.finished ? '다시 시작' : '시작하기',
+              gradient: AppGradients.greenGradient,
+              glowColor: AppColors.accentGreen,
+              height: buttonHeight,
+              iconSize: iconSize,
+              fontSize: fontSize,
+            ),
+          ),
+        ],
       );
     }
 

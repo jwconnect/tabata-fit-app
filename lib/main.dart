@@ -7,6 +7,7 @@ import 'providers/statistics_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/main_screen.dart';
 import 'utils/app_theme.dart';
+import 'services/ad_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,8 +30,25 @@ void main() {
   );
 }
 
-class TabataFitApp extends StatelessWidget {
+class TabataFitApp extends StatefulWidget {
   const TabataFitApp({super.key});
+
+  @override
+  State<TabataFitApp> createState() => _TabataFitAppState();
+}
+
+class _TabataFitAppState extends State<TabataFitApp> {
+  @override
+  void initState() {
+    super.initState();
+    // 앱 시작 시 초기화
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 저장된 운동 기록 로드
+      context.read<StatisticsProvider>().init();
+      // 광고 서비스 초기화
+      AdService().init();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
