@@ -56,9 +56,10 @@ class SettingsProvider with ChangeNotifier {
       );
     }
 
-    // SoundService에 사운드/진동 설정 동기화
+    // SoundService에 사운드/진동/언어 설정 동기화
     SoundService().setMuted(!_soundEnabled);
     SoundService().setVibrationEnabled(_vibrationEnabled);
+    await SoundService().setLanguageCode(_language);
 
     notifyListeners();
   }
@@ -92,6 +93,8 @@ class SettingsProvider with ChangeNotifier {
     _language = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', value);
+    // SoundService에 언어 설정 동기화
+    await SoundService().setLanguageCode(value);
     notifyListeners();
   }
 
