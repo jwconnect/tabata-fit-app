@@ -10,12 +10,12 @@ class AdService {
 
   bool _isInitialized = false;
 
-  // 테스트 광고 ID (실제 배포 시 실제 ID로 교체 필요)
+  // 실제 광고 ID
   static String get bannerAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111'; // Android 테스트 배너
+      return 'ca-app-pub-4329174073402479/8003276075'; // Android 배너
     } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/2934735716'; // iOS 테스트 배너
+      return 'ca-app-pub-4329174073402479/3780125887'; // iOS 배너
     }
     throw UnsupportedError('Unsupported platform');
   }
@@ -23,9 +23,9 @@ class AdService {
   // 큰 배너용 (MEDIUM_RECTANGLE 300x250)
   static String get largeBannerAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111';
+      return 'ca-app-pub-4329174073402479/8003276075'; // Android 배너
     } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/2934735716';
+      return 'ca-app-pub-4329174073402479/3780125887'; // iOS 배너
     }
     throw UnsupportedError('Unsupported platform');
   }

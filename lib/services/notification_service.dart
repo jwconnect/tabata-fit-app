@@ -53,7 +53,7 @@ class NotificationService {
     );
 
     await _notifications.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
@@ -143,15 +143,13 @@ class NotificationService {
     }
 
     await _notifications.zonedSchedule(
-      _dailyReminderId,
-      '타바타 운동 시간이에요! 🏋️',
-      message,
-      scheduledDate,
-      notificationDetails,
+      id: _dailyReminderId,
+      title: '타바타 운동 시간이에요! 🏋️',
+      body: message,
+      scheduledDate: scheduledDate,
+      notificationDetails: notificationDetails,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time, // 매일 반복
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       payload: 'daily_reminder',
     );
 
@@ -160,7 +158,7 @@ class NotificationService {
 
   /// 매일 알림 취소
   Future<void> cancelDailyReminder() async {
-    await _notifications.cancel(_dailyReminderId);
+    await _notifications.cancel(id: _dailyReminderId);
     debugPrint('매일 알림 취소됨');
   }
 
@@ -186,10 +184,10 @@ class NotificationService {
     );
 
     await _notifications.show(
-      0,
-      '타바타 운동 시간이에요! 🏋️',
-      '오늘도 4분만 투자해볼까요? 💪',
-      notificationDetails,
+      id: 0,
+      title: '타바타 운동 시간이에요! 🏋️',
+      body: '오늘도 4분만 투자해볼까요? 💪',
+      notificationDetails: notificationDetails,
     );
   }
 

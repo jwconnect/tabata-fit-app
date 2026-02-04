@@ -246,13 +246,18 @@ class TimerProvider with ChangeNotifier {
         _restTime >= 8) {
       _soundService.playRestVoiceGuide(); // 음성만: "호흡을 가다듬으세요" 등
     }
-    // 정리운동 시작 직후 + 매 5초마다 화면에 안내 표시
-    else if (_intervalType == IntervalType.cooldown &&
-        _currentTime > 5 &&
-        (_currentTime == _cooldownTime - 2 || _currentTime % 5 == 0)) {
-      _soundService.showCooldownDisplayTip(); // 화면만: 스트레칭 안내
-      notifyListeners();
-      _scheduleMessageClear();
+    // 정리운동 중 음성 + 화면 안내 (매 5초마다)
+    else if (_intervalType == IntervalType.cooldown && _currentTime > 5) {
+      // 시작 직후 또는 매 5초마다 화면 팁 표시
+      if (_currentTime == _cooldownTime - 2 || _currentTime % 5 == 0) {
+        _soundService.showCooldownDisplayTip(); // 화면: 스트레칭 안내
+        notifyListeners();
+        _scheduleMessageClear();
+      }
+      // 매 7초마다 음성 안내 (화면 팁과 겹치지 않게)
+      if (_currentTime % 7 == 0) {
+        _soundService.playCooldownVoiceGuide(); // 음성: 부드러운 안내
+      }
     }
     // 준비/운동 중에는 틱 사운드 (6초 이상일 때만) - low 우선순위
     else if (_currentTime > 5 &&

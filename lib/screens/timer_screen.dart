@@ -917,7 +917,71 @@ class _TimerScreenState extends State<TimerScreen>
             letterSpacing: 2,
           ),
         ),
+        SizedBox(height: spacingMedium),
+        // 운동별 팁 표시
+        _buildExerciseTip(
+          exerciseName,
+          intervalColor,
+          baseUnit,
+          spacingSmall,
+        ),
       ],
+    );
+  }
+
+  /// 운동별 팁 위젯
+  Widget _buildExerciseTip(
+    String? exerciseName,
+    Color intervalColor,
+    double baseUnit,
+    double spacingSmall,
+  ) {
+    if (exerciseName == null) return const SizedBox.shrink();
+
+    final tip = ExerciseAssets.getTipByName(exerciseName);
+    if (tip == null) return const SizedBox.shrink();
+
+    final tipFontSize = (baseUnit * 2.8).clamp(11.0, 16.0);
+    final tipPaddingH = (baseUnit * 3).clamp(12.0, 20.0);
+    final tipPaddingV = (baseUnit * 2).clamp(8.0, 14.0);
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: tipPaddingH),
+      padding: EdgeInsets.symmetric(
+        horizontal: tipPaddingH,
+        vertical: tipPaddingV,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: intervalColor.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.lightbulb_outline_rounded,
+            color: intervalColor.withOpacity(0.8),
+            size: tipFontSize * 1.3,
+          ),
+          SizedBox(width: spacingSmall),
+          Flexible(
+            child: Text(
+              tip,
+              style: TextStyle(
+                fontSize: tipFontSize,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withOpacity(0.9),
+                height: 1.3,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1356,22 +1420,72 @@ class _TimerScreenState extends State<TimerScreen>
               padding: EdgeInsets.only(bottom: spacing * 2),
               child: const LargeBannerAdWidget(),
             ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: _buildGradientButton(
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                timerProvider.startTimer();
-              },
-              icon: Icons.play_arrow_rounded,
-              label: state == TimerState.finished ? '다시 시작' : '시작하기',
-              gradient: AppGradients.greenGradient,
-              glowColor: AppColors.accentGreen,
-              height: buttonHeight,
-              iconSize: iconSize,
-              fontSize: fontSize,
+          // 완료 화면: 다시 시작 + 종료 버튼
+          if (state == TimerState.finished)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: Row(
+                children: [
+                  // 종료 버튼
+                  Expanded(
+                    child: _buildGradientButton(
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        timerProvider.resetTimer();
+                        Navigator.of(context).pop();
+                      },
+                      icon: Icons.home_rounded,
+                      label: '종료',
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.grey.shade700,
+                          Colors.grey.shade800,
+                        ],
+                      ),
+                      glowColor: Colors.grey,
+                      height: buttonHeight,
+                      iconSize: iconSize,
+                      fontSize: fontSize,
+                    ),
+                  ),
+                  SizedBox(width: spacing),
+                  // 다시 시작 버튼
+                  Expanded(
+                    child: _buildGradientButton(
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        timerProvider.startTimer();
+                      },
+                      icon: Icons.replay_rounded,
+                      label: '다시 시작',
+                      gradient: AppGradients.greenGradient,
+                      glowColor: AppColors.accentGreen,
+                      height: buttonHeight,
+                      iconSize: iconSize,
+                      fontSize: fontSize,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          // 대기/준비 화면: 시작하기 버튼
+          if (state != TimerState.finished)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: _buildGradientButton(
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  timerProvider.startTimer();
+                },
+                icon: Icons.play_arrow_rounded,
+                label: '시작하기',
+                gradient: AppGradients.greenGradient,
+                glowColor: AppColors.accentGreen,
+                height: buttonHeight,
+                iconSize: iconSize,
+                fontSize: fontSize,
+              ),
+            ),
         ],
       );
     }

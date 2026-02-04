@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:vibration/vibration.dart';
 
 /// TTS 음성 우선순위
 enum TTSPriority {
@@ -170,6 +172,30 @@ class TTSStrings {
     ],
   };
 
+  // 정리운동 음성 안내 (부드럽고 천천히)
+  static const Map<AppLanguage, List<String>> cooldownVoiceMessages = {
+    AppLanguage.ko: [
+      '깊게 호흡하세요',
+      '천천히 스트레칭하세요',
+      '심박수가 내려가고 있어요',
+      '잘하셨어요',
+      '몸의 긴장을 풀어주세요',
+      '숨을 깊게 들이쉬고 내쉬세요',
+      '거의 끝났어요',
+      '오늘도 수고하셨습니다',
+    ],
+    AppLanguage.en: [
+      'Breathe deeply',
+      'Stretch slowly',
+      'Heart rate is coming down',
+      'Well done',
+      'Release the tension',
+      'Inhale deeply and exhale',
+      'Almost finished',
+      'Great workout today',
+    ],
+  };
+
   /// TTS 언어 코드 반환
   static String getTTSLanguageCode(AppLanguage language) {
     switch (language) {
@@ -251,6 +277,7 @@ class SoundService {
   int _restDisplayIndex = 0;
   int _finalPushIndex = 0;
   int _cooldownDisplayIndex = 0;
+  int _cooldownVoiceIndex = 0;
 
   Future<void> init() async {
     if (_isInitialized) return;
@@ -558,6 +585,29 @@ class SoundService {
     _currentDisplayMessage = message;
   }
 
+  /// 정리운동 중 음성 안내 (normal 우선순위) - 부드럽게
+  Future<void> playCooldownVoiceGuide() async {
+    if (!_canSpeak(TTSPriority.normal)) return;
+    await _stopIfNeeded(TTSPriority.normal);
+
+    _isSpeaking = true;
+    _currentPriority = TTSPriority.normal;
+    _scheduleDefensiveReset(TTSPriority.normal);
+
+    final messages = TTSStrings.cooldownVoiceMessages[_language]!;
+    final message = messages[_cooldownVoiceIndex];
+    _cooldownVoiceIndex = (_cooldownVoiceIndex + 1) % messages.length;
+
+    // 부드럽고 천천히
+    await _tts.setVolume(0.85);
+    await _tts.setSpeechRate(0.42);
+    await _tts.setPitch(0.9);
+    await _tts.speak(message);
+    await _tts.setSpeechRate(0.5);
+    await _tts.setPitch(1.0);
+    await _tts.setVolume(1.0);
+  }
+
   /// 운동 완료 사운드 (critical 우선순위)
   Future<void> playFinish() async {
     // 진동은 음소거와 무관하게 항상 실행
@@ -669,20 +719,50 @@ class SoundService {
   }
 
   // 진동 헬퍼 메서드들 - 진동 설정 체크
+  // Android: Vibration 패키지 사용 (더 강력한 진동)
+  // iOS: HapticFeedback 사용 (시스템 햅틱)
   Future<void> _vibrateLightImpact() async {
-    if (_isVibrationEnabled) await HapticFeedback.lightImpact();
+    if (!_isVibrationEnabled) return;
+    if (Platform.isAndroid) {
+      if (await Vibration.hasVibrator() == true) {
+        Vibration.vibrate(duration: 30, amplitude: 64);
+      }
+    } else {
+      await HapticFeedback.lightImpact();
+    }
   }
 
   Future<void> _vibrateMediumImpact() async {
-    if (_isVibrationEnabled) await HapticFeedback.mediumImpact();
+    if (!_isVibrationEnabled) return;
+    if (Platform.isAndroid) {
+      if (await Vibration.hasVibrator() == true) {
+        Vibration.vibrate(duration: 50, amplitude: 128);
+      }
+    } else {
+      await HapticFeedback.mediumImpact();
+    }
   }
 
   Future<void> _vibrateHeavyImpact() async {
-    if (_isVibrationEnabled) await HapticFeedback.heavyImpact();
+    if (!_isVibrationEnabled) return;
+    if (Platform.isAndroid) {
+      if (await Vibration.hasVibrator() == true) {
+        Vibration.vibrate(duration: 100, amplitude: 255);
+      }
+    } else {
+      await HapticFeedback.heavyImpact();
+    }
   }
 
   Future<void> _vibrateSelectionClick() async {
-    if (_isVibrationEnabled) await HapticFeedback.selectionClick();
+    if (!_isVibrationEnabled) return;
+    if (Platform.isAndroid) {
+      if (await Vibration.hasVibrator() == true) {
+        Vibration.vibrate(duration: 20, amplitude: 64);
+      }
+    } else {
+      await HapticFeedback.selectionClick();
+    }
   }
 
   /// TTS 즉시 중지 (타이머 중단/리셋 시 호출)
