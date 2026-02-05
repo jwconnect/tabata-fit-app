@@ -1,4 +1,4 @@
-package com.example.tabata_fit
+package com.cjw.tabatafit
 
 import io.flutter.embedding.android.FlutterActivity
 
