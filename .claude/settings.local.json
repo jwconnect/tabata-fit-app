@@ -4,7 +4,8 @@
       "Skill(commit-commands:commit)",
       "Bash(dart run:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nflutter_launcher_icons로 앱 아이콘 재생성\n\nGenerated with [Claude Code]\\(https://claude.ai/code\\)\nvia [Happy]\\(https://happy.engineering\\)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nCo-Authored-By: Happy <yesreply@happy.engineering>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nflutter_launcher_icons로 앱 아이콘 재생성\n\nGenerated with [Claude Code]\\(https://claude.ai/code\\)\nvia [Happy]\\(https://happy.engineering\\)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nCo-Authored-By: Happy <yesreply@happy.engineering>\nEOF\n\\)\")",
+      "mcp__acp__Bash"
     ]
   }
 }
