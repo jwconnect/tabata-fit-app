@@ -115,8 +115,9 @@ class TimerProvider with ChangeNotifier {
   int get sets => _sets;
 
   double get progress {
-    if (_state == TimerState.initial || _state == TimerState.finished)
+    if (_state == TimerState.initial || _state == TimerState.finished) {
       return 0.0;
+    }
 
     int totalIntervalTime = 0;
     int currentIntervalTime = 0;

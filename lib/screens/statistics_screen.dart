@@ -52,7 +52,7 @@ class StatisticsScreen extends StatelessWidget {
                               gradient: LinearGradient(
                                 colors: [
                                   AppColors.accentBlue,
-                                  AppColors.accentBlue.withOpacity(0.7),
+                                  AppColors.accentBlue.withValues(alpha:0.7),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -66,7 +66,7 @@ class StatisticsScreen extends StatelessWidget {
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.5),
+                              Colors.black.withValues(alpha:0.5),
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -134,7 +134,7 @@ class StatisticsScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primaryRed.withOpacity(0.1),
+            color: AppColors.primaryRed.withValues(alpha:0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: AppColors.primaryRed, size: 20),
@@ -225,7 +225,7 @@ class StatisticsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
+            color: Colors.black.withValues(alpha:isDark ? 0.2 : 0.06),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -237,7 +237,7 @@ class StatisticsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha:0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -297,7 +297,7 @@ class StatisticsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
+            color: Colors.black.withValues(alpha:isDark ? 0.2 : 0.06),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -354,7 +354,7 @@ class StatisticsScreen extends StatelessWidget {
                                         ]
                                       : [
                                           AppColors.accentBlue,
-                                          AppColors.accentBlue.withOpacity(0.7),
+                                          AppColors.accentBlue.withValues(alpha:0.7),
                                         ],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
@@ -371,7 +371,7 @@ class StatisticsScreen extends StatelessWidget {
                                         (isToday
                                                 ? AppColors.primaryRed
                                                 : AppColors.accentBlue)
-                                            .withOpacity(0.3),
+                                            .withValues(alpha:0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 3),
                                   ),
@@ -387,7 +387,7 @@ class StatisticsScreen extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: isToday
-                              ? AppColors.primaryRed.withOpacity(0.1)
+                              ? AppColors.primaryRed.withValues(alpha:0.1)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -425,7 +425,7 @@ class StatisticsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
+            color: Colors.black.withValues(alpha:isDark ? 0.2 : 0.06),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -436,7 +436,7 @@ class StatisticsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.primaryRed.withOpacity(0.1),
+              color: AppColors.primaryRed.withValues(alpha:0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -480,7 +480,7 @@ class StatisticsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+            color: Colors.black.withValues(alpha:isDark ? 0.2 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -495,7 +495,7 @@ class StatisticsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryRed.withOpacity(0.3),
+                  color: AppColors.primaryRed.withValues(alpha:0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -558,7 +558,7 @@ class StatisticsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.primaryRed.withOpacity(0.1),
+              color: AppColors.primaryRed.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(

@@ -86,7 +86,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         border: Border.all(color: AppColors.glassBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -144,7 +144,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       child: AnimatedBuilder(
         animation: _animControllers[index],
         builder: (context, child) {
-          final animValue = _animControllers[index].value;
           return AnimatedContainer(
             duration: AppAnimations.fast,
             padding: EdgeInsets.symmetric(
@@ -153,7 +152,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             ),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primaryRed.withOpacity(0.15)
+                  ? AppColors.primaryRed.withValues(alpha: 0.15)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(16),
             ),

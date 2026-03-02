@@ -234,7 +234,7 @@ class AppTextStyles {
 class AppShadows {
   static List<BoxShadow> get small => [
     BoxShadow(
-      color: Colors.black.withOpacity(0.2),
+      color: Colors.black.withValues(alpha:0.2),
       blurRadius: 8,
       offset: const Offset(0, 2),
     ),
@@ -242,7 +242,7 @@ class AppShadows {
 
   static List<BoxShadow> get medium => [
     BoxShadow(
-      color: Colors.black.withOpacity(0.3),
+      color: Colors.black.withValues(alpha:0.3),
       blurRadius: 16,
       offset: const Offset(0, 4),
     ),
@@ -250,7 +250,7 @@ class AppShadows {
 
   static List<BoxShadow> get large => [
     BoxShadow(
-      color: Colors.black.withOpacity(0.4),
+      color: Colors.black.withValues(alpha:0.4),
       blurRadius: 24,
       offset: const Offset(0, 8),
     ),
@@ -258,14 +258,14 @@ class AppShadows {
 
   static List<BoxShadow> get glow => [
     BoxShadow(
-      color: AppColors.primaryRed.withOpacity(0.4),
+      color: AppColors.primaryRed.withValues(alpha:0.4),
       blurRadius: 20,
       spreadRadius: 0,
     ),
   ];
 
   static List<BoxShadow> glowColor(Color color) => [
-    BoxShadow(color: color.withOpacity(0.4), blurRadius: 20, spreadRadius: 0),
+    BoxShadow(color: color.withValues(alpha:0.4), blurRadius: 20, spreadRadius: 0),
   ];
 }
 
@@ -297,7 +297,7 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha:0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

@@ -159,8 +159,8 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
             gradient: LinearGradient(
               colors: [
                 Colors.transparent,
-                Colors.black.withOpacity(0.3),
-                Colors.black.withOpacity(0.7),
+                Colors.black.withValues(alpha:0.3),
+                Colors.black.withValues(alpha:0.7),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -189,7 +189,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
         gradient: LinearGradient(
           colors: [
             _getDifficultyColor(widget.workout.difficulty),
-            _getDifficultyColor(widget.workout.difficulty).withOpacity(0.7),
+            _getDifficultyColor(widget.workout.difficulty).withValues(alpha:0.7),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -204,7 +204,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha:0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -281,9 +281,9 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.primaryRed.withOpacity(0.1),
+              color: AppColors.primaryRed.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primaryRed.withOpacity(0.3)),
+              border: Border.all(color: AppColors.primaryRed.withValues(alpha:0.3)),
             ),
             child: Text(
               extraSets == 0
@@ -368,7 +368,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryRed.withOpacity(0.3),
+            color: AppColors.primaryRed.withValues(alpha:0.3),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -400,7 +400,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+            color: Colors.black.withValues(alpha:isDark ? 0.2 : 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -429,7 +429,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
                           return Container(
                             color: _getDifficultyColor(
                               widget.workout.difficulty,
-                            ).withOpacity(0.2),
+                            ).withValues(alpha:0.2),
                             child: Center(
                               child: Icon(
                                 Icons.fitness_center,
@@ -445,7 +445,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
                       // 비디오가 있으면 재생 버튼 오버레이
                       if (hasVideo)
                         Container(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha:0.3),
                           child: Center(
                             child: Container(
                               decoration: BoxDecoration(
@@ -453,7 +453,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primaryRed.withOpacity(
+                                    color: AppColors.primaryRed.withValues(alpha:
                                       0.5,
                                     ),
                                     blurRadius: 16,
@@ -529,9 +529,9 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.accentYellow.withOpacity(isDark ? 0.15 : 0.1),
+        color: AppColors.accentYellow.withValues(alpha:isDark ? 0.15 : 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accentYellow.withOpacity(0.3)),
+        border: Border.all(color: AppColors.accentYellow.withValues(alpha:0.3)),
       ),
       child: Column(
         children: widget.workout.tips
@@ -573,7 +573,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
         color: isDark ? AppColors.darkGray : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha:0.1),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -587,7 +587,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryRed.withOpacity(0.4),
+                color: AppColors.primaryRed.withValues(alpha:0.4),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -649,19 +649,19 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
       return Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha:0.4),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: glowColor.withOpacity(0.6), width: 2),
+          border: Border.all(color: glowColor.withValues(alpha:0.6), width: 2),
           boxShadow: [
             // 외부 글로우
             BoxShadow(
-              color: glowColor.withOpacity(0.7),
+              color: glowColor.withValues(alpha:0.7),
               blurRadius: 16,
               spreadRadius: 2,
             ),
             // 내부 그림자
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha:0.4),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
@@ -700,9 +700,9 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha:0.2),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.3)),
+        border: Border.all(color: Colors.white.withValues(alpha:0.3)),
       ),
       child: Text(
         label,
@@ -786,7 +786,7 @@ class _PatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.05)
+      ..color = Colors.white.withValues(alpha:0.05)
       ..style = PaintingStyle.fill;
 
     // 기하학적 패턴 그리기
@@ -902,7 +902,7 @@ class _FullScreenVideoPlayerState extends State<_FullScreenVideoPlayer> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                    colors: [Colors.black.withValues(alpha:0.7), Colors.transparent],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -944,7 +944,7 @@ class _FullScreenVideoPlayerState extends State<_FullScreenVideoPlayer> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primaryRed.withOpacity(0.5),
+                          color: AppColors.primaryRed.withValues(alpha:0.5),
                           blurRadius: 20,
                           spreadRadius: 4,
                         ),

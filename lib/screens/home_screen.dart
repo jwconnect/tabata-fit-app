@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/workout_session.dart';
 import '../providers/timer_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../utils/app_theme.dart';
@@ -150,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primaryRed.withOpacity(0.15), AppColors.deepBlack],
+          colors: [AppColors.primaryRed.withValues(alpha: 0.15), AppColors.deepBlack],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -237,13 +238,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.accentOrange.withOpacity(0.2),
-                      AppColors.primaryRed.withOpacity(0.2),
+                      AppColors.accentOrange.withValues(alpha: 0.2),
+                      AppColors.primaryRed.withValues(alpha: 0.2),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
-                    color: AppColors.accentOrange.withOpacity(0.3),
+                    color: AppColors.accentOrange.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -321,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryRed.withOpacity(0.4),
+              color: AppColors.primaryRed.withValues(alpha: 0.4),
               blurRadius: 30,
               offset: const Offset(0, 15),
             ),
@@ -339,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Row(
@@ -360,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -418,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               '20초 운동 · 10초 휴식 · 8세트',
               style: TextStyle(
                 fontSize: 15,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -644,7 +645,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildSessionCard(
-    session,
+    WorkoutSession session,
     StatisticsProvider statsProvider,
     int index,
   ) {
@@ -707,7 +708,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryRed.withOpacity(0.15),
+                color: AppColors.primaryRed.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

@@ -146,7 +146,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           gradient: isSelected
-              ? LinearGradient(colors: [chipColor, chipColor.withOpacity(0.8)])
+              ? LinearGradient(colors: [chipColor, chipColor.withValues(alpha:0.8)])
               : null,
           color: isSelected ? null : AppColors.cardDark,
           borderRadius: BorderRadius.circular(30),
@@ -156,7 +156,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: chipColor.withOpacity(0.4),
+                    color: chipColor.withValues(alpha:0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -222,7 +222,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
             border: Border.all(color: AppColors.glassBorder),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha:0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -256,7 +256,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha:0.7),
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -356,9 +356,9 @@ class _WorkoutScreenState extends State<WorkoutScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha:0.5),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha:0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -428,7 +428,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [bgColor.withOpacity(0.8), bgColor],
+          colors: [bgColor.withValues(alpha:0.8), bgColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -437,7 +437,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
         child: Container(
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha:0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 48, color: Colors.white),
@@ -473,12 +473,12 @@ class _WorkoutScreenState extends State<WorkoutScreen>
       return Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha:0.4),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: glowColor.withOpacity(0.5)),
+          border: Border.all(color: glowColor.withValues(alpha:0.5)),
           boxShadow: [
             BoxShadow(
-              color: glowColor.withOpacity(0.5),
+              color: glowColor.withValues(alpha:0.5),
               blurRadius: 12,
               spreadRadius: 0,
             ),
@@ -502,11 +502,11 @@ class _WorkoutScreenState extends State<WorkoutScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [color, color.withOpacity(0.8)]),
+        gradient: LinearGradient(colors: [color, color.withValues(alpha:0.8)]),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.4),
+            color: color.withValues(alpha:0.4),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

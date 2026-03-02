@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -54,13 +53,19 @@ class _TimerScreenState extends State<TimerScreen>
   }
 
   void _initializeVideo(String? exerciseName) {
-    if (exerciseName == null) return;
+    if (exerciseName == null) {
+      return;
+    }
 
     final videoPath = ExerciseAssets.getVideoPathByName(exerciseName);
-    if (videoPath.isEmpty) return;
+    if (videoPath.isEmpty) {
+      return;
+    }
 
     // 같은 비디오면 재초기화하지 않음
-    if (videoPath == _currentVideoPath && _isVideoInitialized) return;
+    if (videoPath == _currentVideoPath && _isVideoInitialized) {
+      return;
+    }
 
     _currentVideoPath = videoPath;
     _videoController?.removeListener(_onVideoUpdate);
@@ -95,7 +100,6 @@ class _TimerScreenState extends State<TimerScreen>
   void _onVideoUpdate() {
     // 재생 상태 변경시에만 UI 갱신 (초기화 완료, 재생 시작/정지 등)
     if (mounted && _videoController != null) {
-      final isPlaying = _videoController!.value.isPlaying;
       final isInitialized = _videoController!.value.isInitialized;
       // 상태 변경이 있을 때만 setState 호출
       if (isInitialized && !_isVideoInitialized) {
@@ -139,8 +143,6 @@ class _TimerScreenState extends State<TimerScreen>
         return '휴식';
       case IntervalType.cooldown:
         return '정리';
-      default:
-        return '';
     }
   }
 
@@ -154,8 +156,6 @@ class _TimerScreenState extends State<TimerScreen>
         return 'TAKE A REST';
       case IntervalType.cooldown:
         return 'COOL DOWN';
-      default:
-        return '';
     }
   }
 
@@ -169,8 +169,6 @@ class _TimerScreenState extends State<TimerScreen>
         return AppColors.restBlue;
       case IntervalType.cooldown:
         return AppColors.cooldownGreen;
-      default:
-        return AppColors.primaryRed;
     }
   }
 
@@ -184,8 +182,6 @@ class _TimerScreenState extends State<TimerScreen>
         return Icons.self_improvement_rounded;
       case IntervalType.cooldown:
         return Icons.air_rounded;
-      default:
-        return Icons.timer;
     }
   }
 
@@ -289,7 +285,7 @@ class _TimerScreenState extends State<TimerScreen>
                         center: Alignment.center,
                         radius: 1.2,
                         colors: [
-                          intervalColor.withOpacity(0.4),
+                          intervalColor.withValues(alpha: 0.4),
                           AppColors.deepBlack,
                         ],
                       ),
@@ -305,7 +301,7 @@ class _TimerScreenState extends State<TimerScreen>
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: intervalColor.withOpacity(0.4),
+                            color: intervalColor.withValues(alpha: 0.4),
                             blurRadius: 30,
                             spreadRadius: 5,
                           ),
@@ -333,7 +329,7 @@ class _TimerScreenState extends State<TimerScreen>
                             center: Alignment.center,
                             radius: 1.5,
                             colors: [
-                              intervalColor.withOpacity(0.3),
+                              intervalColor.withValues(alpha: 0.3),
                               AppColors.deepBlack,
                             ],
                           ),
@@ -353,8 +349,8 @@ class _TimerScreenState extends State<TimerScreen>
                           center: Alignment.center,
                           radius: 1.2,
                           colors: [
-                            intervalColor.withOpacity(
-                              _glowAnimation.value * 0.3,
+                            intervalColor.withValues(
+                              alpha: _glowAnimation.value * 0.3,
                             ),
                             AppColors.deepBlack,
                           ],
@@ -373,10 +369,10 @@ class _TimerScreenState extends State<TimerScreen>
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.4),
-                          Colors.black.withOpacity(0.1),
-                          Colors.black.withOpacity(0.1),
-                          Colors.black.withOpacity(0.6),
+                          Colors.black.withValues(alpha: 0.4),
+                          Colors.black.withValues(alpha: 0.1),
+                          Colors.black.withValues(alpha: 0.1),
+                          Colors.black.withValues(alpha: 0.6),
                         ],
                         stops: const [0.0, 0.2, 0.7, 1.0],
                       ),
@@ -460,14 +456,14 @@ class _TimerScreenState extends State<TimerScreen>
                                                 vertical: spacingSmall,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: Colors.black.withOpacity(
-                                                  0.6,
+                                                color: Colors.black.withValues(
+                                                  alpha: 0.6,
                                                 ),
                                                 borderRadius:
                                                     BorderRadius.circular(16),
                                                 border: Border.all(
                                                   color: intervalColor
-                                                      .withOpacity(0.5),
+                                                      .withValues(alpha: 0.5),
                                                   width: 1.5,
                                                 ),
                                               ),
@@ -513,7 +509,7 @@ class _TimerScreenState extends State<TimerScreen>
                                                     BoxShadow(
                                                       color: AppColors
                                                           .primaryRed
-                                                          .withOpacity(0.4),
+                                                          .withValues(alpha: 0.4),
                                                       blurRadius: 15,
                                                       offset: const Offset(
                                                         0,
@@ -625,7 +621,6 @@ class _TimerScreenState extends State<TimerScreen>
     // 간격
     final spacingSmall = (baseUnit * 1).clamp(4.0, 8.0);
     final spacingMedium = (baseUnit * 2.5).clamp(8.0, 20.0);
-    final spacingLarge = (baseUnit * 3).clamp(12.0, 24.0);
 
     // 운동 이름 영역
     final exerciseIconSize = (baseUnit * 3.5).clamp(14.0, 22.0);
@@ -648,11 +643,11 @@ class _TimerScreenState extends State<TimerScreen>
             vertical: badgePaddingV,
           ),
           decoration: BoxDecoration(
-            color: intervalColor.withOpacity(0.9),
+            color: intervalColor.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: intervalColor.withOpacity(0.5),
+                color: intervalColor.withValues(alpha: 0.5),
                 blurRadius: 20,
                 spreadRadius: 2,
               ),
@@ -687,7 +682,7 @@ class _TimerScreenState extends State<TimerScreen>
           style: TextStyle(
             fontSize: subtextFontSize,
             fontWeight: FontWeight.w600,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             letterSpacing: 3,
           ),
         ),
@@ -707,20 +702,20 @@ class _TimerScreenState extends State<TimerScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.black.withOpacity(0.8),
-                    Colors.black.withOpacity(0.6),
+                    Colors.black.withValues(alpha: 0.8),
+                    Colors.black.withValues(alpha: 0.6),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: intervalColor.withOpacity(0.6),
+                  color: intervalColor.withValues(alpha: 0.6),
                   width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: intervalColor.withOpacity(0.3),
+                    color: intervalColor.withValues(alpha: 0.3),
                     blurRadius: 20,
                     spreadRadius: 2,
                   ),
@@ -736,7 +731,7 @@ class _TimerScreenState extends State<TimerScreen>
                   letterSpacing: 1.5,
                   shadows: [
                     Shadow(
-                      color: intervalColor.withOpacity(0.8),
+                      color: intervalColor.withValues(alpha: 0.8),
                       blurRadius: 10,
                     ),
                   ],
@@ -764,11 +759,11 @@ class _TimerScreenState extends State<TimerScreen>
                 height: timerSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   border: Border.all(color: intervalColor, width: strokeWidth),
                   boxShadow: [
                     BoxShadow(
-                      color: intervalColor.withOpacity(0.4),
+                      color: intervalColor.withValues(alpha: 0.4),
                       blurRadius: 25,
                       spreadRadius: 3,
                     ),
@@ -784,7 +779,7 @@ class _TimerScreenState extends State<TimerScreen>
                       child: CircularProgressIndicator(
                         value: progress,
                         strokeWidth: strokeWidth,
-                        backgroundColor: Colors.white.withOpacity(0.1),
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
                         valueColor: AlwaysStoppedAnimation<Color>(
                           intervalColor,
                         ),
@@ -799,7 +794,7 @@ class _TimerScreenState extends State<TimerScreen>
                         color: Colors.white,
                         shadows: [
                           Shadow(
-                            color: intervalColor.withOpacity(0.8),
+                            color: intervalColor.withValues(alpha: 0.8),
                             blurRadius: 20,
                           ),
                         ],
@@ -821,9 +816,9 @@ class _TimerScreenState extends State<TimerScreen>
               vertical: exercisePaddingV,
             ),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -893,11 +888,11 @@ class _TimerScreenState extends State<TimerScreen>
                     borderRadius: BorderRadius.circular(setIndicatorHeight / 2),
                     color: isCompleted
                         ? intervalColor
-                        : Colors.white.withOpacity(0.2),
+                        : Colors.white.withValues(alpha: 0.2),
                     boxShadow: isCurrent
                         ? [
                             BoxShadow(
-                              color: intervalColor.withOpacity(0.6),
+                              color: intervalColor.withValues(alpha: 0.6),
                               blurRadius: 6,
                             ),
                           ]
@@ -913,7 +908,7 @@ class _TimerScreenState extends State<TimerScreen>
           style: TextStyle(
             fontSize: setFontSize,
             fontWeight: FontWeight.w600,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             letterSpacing: 2,
           ),
         ),
@@ -952,10 +947,10 @@ class _TimerScreenState extends State<TimerScreen>
         vertical: tipPaddingV,
       ),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: intervalColor.withOpacity(0.3),
+          color: intervalColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -964,7 +959,7 @@ class _TimerScreenState extends State<TimerScreen>
         children: [
           Icon(
             Icons.lightbulb_outline_rounded,
-            color: intervalColor.withOpacity(0.8),
+            color: intervalColor.withValues(alpha: 0.8),
             size: tipFontSize * 1.3,
           ),
           SizedBox(width: spacingSmall),
@@ -974,7 +969,7 @@ class _TimerScreenState extends State<TimerScreen>
               style: TextStyle(
                 fontSize: tipFontSize,
                 fontWeight: FontWeight.w500,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 height: 1.3,
               ),
               textAlign: TextAlign.center,
@@ -999,7 +994,7 @@ class _TimerScreenState extends State<TimerScreen>
     final timeFontSize = (baseUnit * 2.8).clamp(11.0, 16.0);
     final timePaddingH = (baseUnit * 3).clamp(10.0, 20.0);
     final timePaddingV = (baseUnit * 2).clamp(6.0, 12.0);
-    final spacerWidth = closeButtonPadding * 2 + closeIconSize;
+    // final spacerWidth = closeButtonPadding * 2 + closeIconSize;
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -1103,13 +1098,13 @@ class _TimerScreenState extends State<TimerScreen>
           ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [color.withOpacity(0.3), color.withOpacity(0.1)],
+              colors: [color.withValues(alpha: 0.3), color.withValues(alpha: 0.1)],
             ),
             borderRadius: BorderRadius.circular(40),
-            border: Border.all(color: color.withOpacity(0.5)),
+            border: Border.all(color: color.withValues(alpha: 0.5)),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: color.withValues(alpha: 0.3),
                 blurRadius: 20,
                 spreadRadius: 0,
               ),
@@ -1245,7 +1240,7 @@ class _TimerScreenState extends State<TimerScreen>
                           height: 1,
                           shadows: [
                             Shadow(
-                              color: color.withOpacity(0.5),
+                              color: color.withValues(alpha: 0.5),
                               blurRadius: 20,
                             ),
                           ],
@@ -1300,7 +1295,7 @@ class _TimerScreenState extends State<TimerScreen>
                 borderRadius: BorderRadius.circular(indicatorHeight / 2),
                 color: isCompleted ? color : AppColors.surfaceDark,
                 boxShadow: isCurrent
-                    ? [BoxShadow(color: color.withOpacity(0.5), blurRadius: 8)]
+                    ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 8)]
                     : null,
               ),
             );
@@ -1343,15 +1338,15 @@ class _TimerScreenState extends State<TimerScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.accentGreen.withOpacity(0.2),
-            AppColors.accentGreen.withOpacity(0.05),
+            AppColors.accentGreen.withValues(alpha: 0.2),
+            AppColors.accentGreen.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(padding),
-        border: Border.all(color: AppColors.accentGreen.withOpacity(0.3)),
+        border: Border.all(color: AppColors.accentGreen.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accentGreen.withOpacity(0.2),
+            color: AppColors.accentGreen.withValues(alpha: 0.2),
             blurRadius: 30,
           ),
         ],
@@ -1361,7 +1356,7 @@ class _TimerScreenState extends State<TimerScreen>
           Container(
             padding: EdgeInsets.all(iconContainerPadding),
             decoration: BoxDecoration(
-              color: AppColors.accentGreen.withOpacity(0.2),
+              color: AppColors.accentGreen.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -1507,7 +1502,7 @@ class _TimerScreenState extends State<TimerScreen>
                     gradient: LinearGradient(
                       colors: [
                         AppColors.accentOrange,
-                        AppColors.accentOrange.withOpacity(0.8),
+                        AppColors.accentOrange.withValues(alpha: 0.8),
                       ],
                     ),
                     glowColor: AppColors.accentOrange,
@@ -1543,7 +1538,7 @@ class _TimerScreenState extends State<TimerScreen>
                 color: AppColors.cardDark,
                 borderRadius: BorderRadius.circular(stopButtonSize * 0.3),
                 border: Border.all(
-                  color: AppColors.advancedRed.withOpacity(0.3),
+                  color: AppColors.advancedRed.withValues(alpha: 0.3),
                 ),
               ),
               child: Icon(
@@ -1577,7 +1572,7 @@ class _TimerScreenState extends State<TimerScreen>
           borderRadius: BorderRadius.circular(height * 0.3),
           boxShadow: [
             BoxShadow(
-              color: glowColor.withOpacity(0.4),
+              color: glowColor.withValues(alpha: 0.4),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -1631,7 +1626,7 @@ class _TimerRingPainter extends CustomPainter {
 
     if (hasShadow) {
       final shadowPaint = Paint()
-        ..color = color.withOpacity(0.3)
+        ..color = color.withValues(alpha: 0.3)
         ..strokeWidth = strokeWidth + 8
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
