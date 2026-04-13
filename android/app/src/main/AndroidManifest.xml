@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="tabata_fit"
+        android:label="타바타 핏"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

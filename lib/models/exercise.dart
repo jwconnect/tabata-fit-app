@@ -210,13 +210,7 @@ class ExerciseAssets {
   }
 
   /// UI 배경 이미지 경로
-  static const Map<String, String> uiBackgrounds = {
-    'splash': 'assets/images/ui/bg_splash.png',
-    'home': 'assets/images/ui/bg_home_pattern.png',
-    'statistics': 'assets/images/ui/bg_statistics.png',
-    'onboarding1': 'assets/images/ui/bg_onboarding_01.png',
-    'onboarding2': 'assets/images/ui/bg_onboarding_02.png',
-  };
+  static const String statisticsBackground = 'assets/images/ui/bg_statistics.png';
 
   /// 탭바 아이콘 경로
   static const Map<String, String> tabIcons = {
